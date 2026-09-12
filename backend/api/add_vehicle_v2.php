@@ -22,7 +22,7 @@ if (!isset($data['user_id'])) {
 $user_id = (int)$data['user_id'];
 $make = $data['make'] ?? null;
 $model = $data['model'] ?? null;
-$year = $data['year'] ?? null;
+$year = isset($data['year']) && $data['year'] !== '' ? (int)$data['year'] : null;
 $trim_level = $data['trim_level'] ?? null;
 $body_type = $data['body_type'] ?? null;
 $transmission = $data['transmission'] ?? null;
@@ -32,7 +32,7 @@ $interior_color = $data['interior_color'] ?? null;
 $fuel_type = $data['fuel_type'] ?? null;
 $vin = $data['vin'] ?? null;
 $condition_state = $data['condition_state'] ?? null;
-$price = $data['price'] ?? null;
+$price = isset($data['price']) && $data['price'] !== '' ? (float)$data['price'] : null;
 $listing_type = $data['listing_type'] ?? null;
 $city = $data['city'] ?? null;
 $state_location = $data['state_location'] ?? null;
