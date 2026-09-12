@@ -1,0 +1,423 @@
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 20px;
+  font-family: 'Inter', sans-serif;
+  color: #1a1a1a;
+  background-color: #f9f9f9;
+  min-height: 100vh;
+}
+
+.headerSection {
+  padding: 40px 0;
+  position: relative;
+}
+
+.headerSection h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin: 0 0 10px 0;
+  color: #1a1a1a;
+}
+
+.headerSection p {
+  color: #666;
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+.stepper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 40px;
+  position: relative;
+}
+
+.stepLine {
+  position: absolute;
+  top: 15px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: #e0e0e0;
+  z-index: 1;
+}
+
+.stepLineActive {
+  position: absolute;
+  top: 15px;
+  left: 0;
+  height: 2px;
+  background-color: var(--gold, #d4af37);
+  z-index: 2;
+  transition: width 0.3s ease;
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 3;
+  position: relative;
+  background: #f9f9f9;
+  padding: 0 10px;
+}
+
+.stepCircle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: #e0e0e0;
+  color: #666;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin-bottom: 8px;
+}
+
+.stepActive .stepCircle {
+  background-color: var(--gold, #d4af37);
+  color: #fff;
+}
+
+.stepCompleted .stepCircle {
+  background-color: #1a1a1a;
+  color: #fff;
+}
+
+.stepLabel {
+  font-size: 0.85rem;
+  color: #888;
+  font-weight: 500;
+}
+
+.stepActive .stepLabel, .stepCompleted .stepLabel {
+  color: #1a1a1a;
+  font-weight: 600;
+}
+
+.mainLayout {
+  display: grid;
+  grid-template-columns: 1fr 350px;
+  gap: 40px;
+  padding: 40px 0 80px 0;
+}
+
+.formSection {
+  background: #fff;
+  border-radius: 12px;
+  padding: 32px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+  margin-bottom: 30px;
+}
+
+.sectionTitle {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0 0 5px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sectionSubtitle {
+  color: #666;
+  margin: 0 0 24px 0;
+  font-size: 0.95rem;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+}
+
+.formGroup label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.formGroup label span {
+  color: red;
+}
+
+.input, .select {
+  padding: 12px 16px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  transition: all 0.2s;
+  background: #fff;
+}
+
+.input:focus, .select:focus {
+  outline: none;
+  border-color: var(--gold, #d4af37);
+  box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.1);
+}
+
+.conditionGrid {
+  display: flex;
+  gap: 10px;
+  margin-top: 5px;
+}
+
+.conditionBtn {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background: #fff;
+  font-weight: 500;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #666;
+}
+
+.conditionBtnActive {
+  border-color: #1a1a1a;
+  background: #1a1a1a;
+  color: #fff;
+}
+
+.uploadArea {
+  border: 2px dashed #e0e0e0;
+  border-radius: 12px;
+  padding: 40px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #fafafa;
+}
+
+.uploadArea:hover {
+  border-color: var(--gold, #d4af37);
+  background: #fff9e6;
+}
+
+.uploadIcon {
+  color: #888;
+  margin-bottom: 16px;
+}
+
+.uploadText {
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.uploadSubtext {
+  color: #888;
+  font-size: 0.85rem;
+}
+
+.imageGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.imagePreviewCard {
+  position: relative;
+  aspect-ratio: 4/3;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #eee;
+}
+
+.imagePreviewCard img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.removeImageBtn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(0,0,0,0.6);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.actionButtons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 32px;
+}
+
+.btnSecondary {
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btnPrimary {
+  background: var(--gold, #d4af37);
+  color: #fff;
+  border: none;
+  padding: 12px 32px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.2s;
+}
+
+.btnPrimary:hover {
+  background: #b5952f;
+}
+
+/* Sidebar styling */
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.previewCard {
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+}
+
+.previewHeader {
+  padding: 16px 20px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.previewHeader h3 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.previewHeader p {
+  margin: 4px 0 0 0;
+  font-size: 0.85rem;
+  color: #888;
+}
+
+.previewImage {
+  width: 100%;
+  aspect-ratio: 16/9;
+  background: #eee;
+  object-fit: cover;
+}
+
+.previewContent {
+  padding: 20px;
+}
+
+.previewTags {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.tag {
+  background: #f0f0f0;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.tagGreen {
+  background: #e6f4ea;
+  color: #137333;
+}
+
+.previewTitle {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin: 0 0 8px 0;
+}
+
+.previewPrice {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0 0 16px 0;
+}
+
+.previewSpecs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.specItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tipsCard {
+  background: #fff9e6;
+  border-radius: 12px;
+  padding: 24px;
+  border: 1px solid rgba(212, 175, 55, 0.2);
+}
+
+.tipsTitle {
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.tipsList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.tipsList li {
+  font-size: 0.9rem;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.tipsList li svg {
+  color: var(--gold, #d4af37);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+@media (max-width: 1024px) {
+  .mainLayout {
+    grid-template-columns: 1fr;
+  }
+}

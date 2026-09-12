@@ -222,7 +222,7 @@ export default function Dashboard() {
           {data.user.role === 'super_admin' && (
             <button className={styles.listBtn} onClick={() => router.push('/admin')} style={{marginRight: '10px', backgroundColor: '#333', color: 'var(--gold)', border: '1px solid var(--gold)'}}>Admin Panel</button>
           )}
-          <button className={styles.listBtn}>List Your Vehicle +</button>
+          <button className={styles.listBtn} onClick={() => router.push('/garage/add')}>List Your Vehicle +</button>
         </div>
       </header>
 
