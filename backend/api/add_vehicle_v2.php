@@ -95,6 +95,7 @@ try {
 
     echo json_encode(["message" => "Vehicle added successfully", "vehicle_id" => $vehicle_id]);
 } catch (PDOException $e) {
-    http_response_code(500);
+    http_response_code(500); file_put_contents('../error.txt', $e->getMessage());
     echo json_encode(["message" => "Database error: " . $e->getMessage()]);
 }
+
