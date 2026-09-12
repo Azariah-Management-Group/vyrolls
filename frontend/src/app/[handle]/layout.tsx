@@ -5,10 +5,11 @@ type Props = {
 };
 
 export async function generateMetadata(
-  { params }: Props,
+  { params }: { params: Promise<{ handle: string }> },
   parent: ResolvingMetadata
 ): Promise<Metadata> {
-  const handle = params.handle;
+  const resolvedParams = await params;
+  const handle = resolvedParams.handle;
   const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
   const formattedHandle = handle.startsWith('%40') ? handle.replace('%40', '@') : (handle.startsWith('@') ? handle : `@${handle}`);
 
