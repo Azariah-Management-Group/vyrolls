@@ -70,7 +70,7 @@ export default function Loading() {
               <circle cx="215" cy="65" r="3" fill="#ffcc00" />
               {/* Spokes */}
               {[0, 45, 90, 135, 180, 225, 270, 315].map(angle => (
-                <line key={angle} x1="215" y1="65" x2={215 + Math.cos(angle * Math.PI / 180) * 15} y2={65 + Math.sin(angle * Math.PI / 180) * 15} stroke="#silver" strokeWidth="2" />
+                <line key={angle} x1="215" y1="65" x2={(215 + Math.cos(angle * Math.PI / 180) * 15).toFixed(2)} y2={(65 + Math.sin(angle * Math.PI / 180) * 15).toFixed(2)} stroke="#silver" strokeWidth="2" />
               ))}
             </g>
             
@@ -85,7 +85,7 @@ export default function Loading() {
               <circle cx="75" cy="65" r="3" fill="#ffcc00" />
               {/* Spokes */}
               {[0, 45, 90, 135, 180, 225, 270, 315].map(angle => (
-                <line key={angle} x1="75" y1="65" x2={75 + Math.cos(angle * Math.PI / 180) * 15} y2={65 + Math.sin(angle * Math.PI / 180) * 15} stroke="#silver" strokeWidth="2" />
+                <line key={angle} x1="75" y1="65" x2={(75 + Math.cos(angle * Math.PI / 180) * 15).toFixed(2)} y2={(65 + Math.sin(angle * Math.PI / 180) * 15).toFixed(2)} stroke="#silver" strokeWidth="2" />
               ))}
             </g>
             
