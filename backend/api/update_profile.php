@@ -21,6 +21,7 @@ if (!isset($data['user_id'])) {
 
 $user_id = (int)$data['user_id'];
 $avatar_url = $data['avatar_url'] ?? null;
+$cover_url = $data['cover_url'] ?? null;
 $bio = $data['bio'] ?? null;
 $location = $data['location'] ?? null;
 $gender = $data['gender'] ?? null;
@@ -39,6 +40,7 @@ try {
         // Update existing profile
         $updateSql = "UPDATE user_profiles SET 
             avatar_url = COALESCE(:avatar_url, avatar_url),
+            cover_url = COALESCE(:cover_url, cover_url),
             bio = COALESCE(:bio, bio),
             location = COALESCE(:location, location),
             gender = COALESCE(:gender, gender),
@@ -52,6 +54,7 @@ try {
         $stmt = $pdo->prepare($updateSql);
         $stmt->execute([
             ':avatar_url' => $avatar_url,
+            ':cover_url' => $cover_url,
             ':bio' => $bio,
             ':location' => $location,
             ':gender' => $gender,
@@ -69,12 +72,13 @@ try {
         $user_name = $user_data ? preg_replace('/[^a-zA-Z0-9]/', '', strtolower($user_data['name'])) : 'user';
 
         // Insert new profile
-        $insertSql = "INSERT INTO user_profiles (user_id, avatar_url, bio, location, gender, address, city, county, town, postal_code, handle, member_since) 
-                      VALUES (:user_id, :avatar_url, :bio, :location, :gender, :address, :city, :county, :town, :postal_code, :handle, CURDATE())";
+        $insertSql = "INSERT INTO user_profiles (user_id, avatar_url, cover_url, bio, location, gender, address, city, county, town, postal_code, handle, member_since) 
+                      VALUES (:user_id, :avatar_url, :cover_url, :bio, :location, :gender, :address, :city, :county, :town, :postal_code, :handle, CURDATE())";
         $stmt = $pdo->prepare($insertSql);
         $stmt->execute([
             ':user_id' => $user_id,
             ':avatar_url' => $avatar_url,
+            ':cover_url' => $cover_url,
             ':bio' => $bio,
             ':location' => $location,
             ':gender' => $gender,

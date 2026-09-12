@@ -77,6 +77,57 @@ export default function Dashboard() {
   const [messages, setMessages] = useState<any[]>([]);
   const [siteLogo, setSiteLogo] = useState<string | null>(null);
 
+  const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      const toastId = toast.loading('Uploading cover image...');
+      
+      try {
+        const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+        const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
+        let cover_url = '';
+
+        if (!cloudName || !uploadPreset) {
+          cover_url = await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result as string);
+            reader.onerror = error => reject(error);
+          });
+        } else {
+          const formData = new FormData();
+          formData.append('file', file);
+          formData.append('upload_preset', uploadPreset);
+          const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+            method: 'POST',
+            body: formData,
+          });
+          if (!response.ok) throw new Error('Failed to upload image to Cloudinary');
+          const cloudinaryData = await response.json();
+          cover_url = cloudinaryData.secure_url;
+        }
+
+        const userId = localStorage.getItem('user_id');
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+        const res = await fetch(`${API_URL}/update_profile.php`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            user_id: userId,
+            cover_url: cover_url
+          }),
+        });
+
+        if (!res.ok) throw new Error('Failed to update profile cover');
+        
+        setData({ ...data, profile: { ...data.profile, cover_url } });
+        toast.success('Cover image updated!', { id: toastId });
+      } catch (err: any) {
+        toast.error(err.message || 'Failed to upload cover', { id: toastId });
+      }
+    }
+  };
+
   const fetchDashboardData = () => {
     const userId = localStorage.getItem('user_id');
     const expiry = localStorage.getItem('session_expiry');
@@ -204,7 +255,10 @@ export default function Dashboard() {
               </div>
             </div>
           </div>
-          <button className={styles.editBannerBtn}><Camera size={16} /> Edit Cover</button>
+          <label className={styles.editBannerBtn} style={{cursor: 'pointer'}}>
+            <Camera size={16} /> Edit Cover
+            <input type="file" accept="image/*" onChange={handleCoverUpload} style={{ display: 'none' }} />
+          </label>
         </div>
 
         {/* Bottom White Stat Bar */}
