@@ -76,6 +76,7 @@ export default function Dashboard() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [messages, setMessages] = useState<any[]>([]);
   const [siteLogo, setSiteLogo] = useState<string | null>(null);
+  const [vehicleDraft, setVehicleDraft] = useState<any>(null);
 
   const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -172,6 +173,12 @@ export default function Dashboard() {
 
   useEffect(() => {
     fetchDashboardData();
+    const draft = localStorage.getItem('vehicleDraft');
+    if (draft) {
+      try {
+        setVehicleDraft(JSON.parse(draft));
+      } catch (e) {}
+    }
   }, [router]);
 
   if (loading) {
@@ -377,6 +384,29 @@ export default function Dashboard() {
             <button>Following ({data.stats.following})</button>
             <button>Followers ({data.stats.followers})</button>
           </div>
+
+          {vehicleDraft && (
+            <>
+              <div className={styles.sectionHeader}>
+                <h3>Draft Listing</h3>
+              </div>
+              <div className={styles.vehicleGrid} style={{marginBottom: '30px'}}>
+                <div className={styles.vehicleCard} onClick={() => router.push('/garage/add')} style={{cursor: 'pointer', border: '1px dashed var(--gold)'}}>
+                  <div className={styles.vehicleImage} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#222' }}>
+                    <div style={{color: '#888'}}>Continue Editing Draft</div>
+                    <div className={styles.vehicleFeatureBadge} style={{background: 'var(--gold)', color: 'black'}}>Draft</div>
+                  </div>
+                  <div className={styles.vehicleInfo}>
+                    <h4>{vehicleDraft.year || 'Year'} {vehicleDraft.make || 'Make'} {vehicleDraft.model || 'Model'}</h4>
+                    <p>{vehicleDraft.transmission || 'Transmission'} | {vehicleDraft.mileage || 'Mileage'}</p>
+                    <div className={styles.vehicleTags}>
+                      <span className={styles.tagPersonal} style={{background: 'transparent', border: '1px solid var(--gold)', color: 'var(--gold)'}}>Resume &rarr;</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
 
           <div className={styles.sectionHeader}>
             <h3>Featured Vehicles</h3>
