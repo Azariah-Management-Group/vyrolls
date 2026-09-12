@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { 
   Upload, X, Camera, Check, MapPin, Search, Bell, ChevronDown, Sparkles
@@ -29,6 +29,22 @@ export default function AddVehiclePage() {
     listing_type: 'For Sale',
   });
   
+  useEffect(() => {
+    const savedDraft = localStorage.getItem('vehicleDraft');
+    if (savedDraft) {
+      try {
+        setFormData(JSON.parse(savedDraft));
+      } catch (e) {
+        console.error('Failed to load draft', e);
+      }
+    }
+  }, []);
+
+  const handleSaveDraft = () => {
+    localStorage.setItem('vehicleDraft', JSON.stringify(formData));
+    toast.success('Draft saved successfully!');
+  };
+
   const [images, setImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   
@@ -120,6 +136,7 @@ export default function AddVehiclePage() {
       }
 
       toast.success('Vehicle published successfully!', { id: toastId });
+      localStorage.removeItem('vehicleDraft');
       router.push('/dashboard');
     } catch (err: any) {
       toast.error(err.message || 'An error occurred', { id: toastId });
@@ -156,7 +173,7 @@ export default function AddVehiclePage() {
     <div className={styles.container}>
       <header style={{ display: 'flex', justifyContent: 'space-between', padding: '20px 0', borderBottom: '1px solid #e0e0e0' }}>
          <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-            <h2 style={{margin: 0, fontWeight: 700}}>AUTORA</h2>
+            <h2 style={{margin: 0, fontWeight: 700, fontFamily: "'Playfair Display', serif", letterSpacing: '3px'}}>VYROLLS</h2>
             <nav style={{display: 'flex', gap: '20px', fontSize: '0.9rem', color: '#666', fontWeight: 500}}>
               <span>Vehicles</span>
               <span>Customize</span>
@@ -181,7 +198,7 @@ export default function AddVehiclePage() {
             <div className={styles.formSection}>
               <div className={styles.sectionTitle}>
                 1. Vehicle Details
-                <button className={styles.btnSecondary} style={{padding: '6px 12px', fontSize: '0.8rem'}}>Save Draft</button>
+                <button className={styles.btnSecondary} style={{padding: '6px 12px', fontSize: '0.8rem'}} onClick={handleSaveDraft}>Save Draft</button>
               </div>
               <p className={styles.sectionSubtitle}>Tell us about your vehicle.</p>
               
