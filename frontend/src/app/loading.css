@@ -1,0 +1,150 @@
+.loadingContainer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: #0a0a0a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  overflow: hidden;
+}
+
+.loadingContent {
+  position: relative;
+  width: 100%;
+  max-width: 600px;
+  height: 300px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.carWrapper {
+  position: relative;
+  width: 300px;
+  height: 100px;
+  z-index: 2;
+  animation: carBounce 0.4s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.luxuryCar {
+  width: 100%;
+  height: 100%;
+}
+
+.wheel {
+  transform-origin: center;
+  animation: wheelSpin 0.3s linear infinite;
+}
+.frontWheel {
+  transform-origin: 210px 65px;
+}
+.backWheel {
+  transform-origin: 80px 65px;
+}
+
+.carShadow {
+  animation: shadowPulse 0.4s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.lightBeam {
+  opacity: 0;
+  animation: beamFlicker 1.5s infinite alternate;
+}
+
+.speedLines {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.speedLine {
+  position: absolute;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.8), transparent);
+  border-radius: 50%;
+  animation: speedPast linear infinite;
+}
+
+.s1 { top: 30%; width: 100px; animation-duration: 0.6s; animation-delay: 0.1s; right: -100px; }
+.s2 { top: 50%; width: 150px; animation-duration: 0.5s; animation-delay: 0.3s; right: -150px; }
+.s3 { top: 70%; width: 80px; animation-duration: 0.7s; animation-delay: 0s; right: -80px; }
+.s4 { top: 85%; width: 200px; animation-duration: 0.4s; animation-delay: 0.5s; right: -200px; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent); }
+.s5 { top: 40%; width: 120px; animation-duration: 0.65s; animation-delay: 0.2s; right: -120px; }
+.s6 { top: 60%; width: 180px; animation-duration: 0.45s; animation-delay: 0.7s; right: -180px; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent); }
+
+
+.loadingText {
+  margin-top: 2rem;
+  color: var(--gold, #d4af37);
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
+  font-size: 1.2rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  display: flex;
+}
+
+.loadingText span {
+  opacity: 0;
+  animation: revealText 1.5s infinite;
+}
+
+.loadingText span:nth-child(1) { animation-delay: 0.1s; }
+.loadingText span:nth-child(2) { animation-delay: 0.2s; }
+.loadingText span:nth-child(3) { animation-delay: 0.3s; }
+.loadingText span:nth-child(4) { animation-delay: 0.4s; }
+.loadingText span:nth-child(5) { animation-delay: 0.5s; }
+.loadingText span:nth-child(6) { animation-delay: 0.6s; }
+.loadingText span:nth-child(7) { animation-delay: 0.7s; }
+.loadingText span:nth-child(8) { animation-delay: 0.8s; }
+.loadingText span:nth-child(9) { animation-delay: 0.9s; }
+.loadingText span:nth-child(10) { animation-delay: 1.0s; }
+.loadingText span:nth-child(11) { animation-delay: 1.1s; }
+.loadingText span:nth-child(12) { animation-delay: 1.2s; }
+.loadingText span:nth-child(13) { animation-delay: 1.3s; }
+.loadingText span:nth-child(14) { animation-delay: 1.4s; }
+.loadingText span:nth-child(15) { animation-delay: 1.5s; }
+.loadingText span:nth-child(16) { animation-delay: 1.6s; }
+.loadingText span:nth-child(17) { animation-delay: 1.7s; }
+
+/* Animations */
+@keyframes carBounce {
+  0% { transform: translateY(0px) rotate(-0.5deg); }
+  100% { transform: translateY(-3px) rotate(0.5deg); }
+}
+
+@keyframes shadowPulse {
+  0% { transform: scale(1); opacity: 0.3; }
+  100% { transform: scale(0.95); opacity: 0.2; }
+}
+
+@keyframes wheelSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes speedPast {
+  0% { transform: translateX(0); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateX(-800px); opacity: 0; }
+}
+
+@keyframes beamFlicker {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 0.9; }
+}
+
+@keyframes revealText {
+  0%, 100% { opacity: 0; transform: translateX(-10px); }
+  50% { opacity: 1; transform: translateX(0); }
+}

@@ -49,7 +49,7 @@ export default function Home() {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false);
 
-  const API_URL = 'http://localhost:8000/api'; // PHP Backend URL
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api'; // PHP Backend URL
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();

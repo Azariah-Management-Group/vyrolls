@@ -9,6 +9,59 @@ import {
 } from 'lucide-react';
 import styles from './dashboard.module.css';
 
+const DashboardSkeleton = () => (
+  <div className={styles.dashboardContainer}>
+    {/* Header Skeleton */}
+    <header className={styles.header}>
+      <div className={styles.logo}>
+        <div className={`${styles.skeleton} ${styles.skeletonAvatar}`} style={{width: 40, height: 40}}></div>
+        <div className={`${styles.skeleton} ${styles.skeletonText}`} style={{width: 150, height: 24}}></div>
+      </div>
+    </header>
+
+    {/* Profile Header Area Skeleton */}
+    <div className={styles.profileHeaderSection}>
+      <div className={styles.skeletonBanner}></div>
+      <div className={styles.profileStatBar}>
+        <div className={styles.statBarContent}>
+          <div className={styles.avatarWrapper}>
+            <div className={`${styles.skeleton} ${styles.skeletonAvatar}`}></div>
+          </div>
+          <div className={styles.bannerProfileStats}>
+            {[1,2,3,4].map(i => (
+              <div key={i} className={styles.statBox}>
+                <div className={`${styles.skeleton} ${styles.skeletonText}`} style={{width: 40, height: 24}}></div>
+                <div className={`${styles.skeleton} ${styles.skeletonText}`} style={{width: 60, height: 14}}></div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {/* Main Layout Skeleton */}
+    <div className={styles.mainLayout}>
+      <aside className={styles.leftSidebar}>
+        {[1,2,3,4,5,6,7].map(i => (
+          <div key={i} className={`${styles.skeleton} ${styles.skeletonNav}`}></div>
+        ))}
+      </aside>
+      <main className={styles.mainContent}>
+        <div className={styles.tabs}>
+          {[1,2,3,4,5].map(i => (
+            <div key={i} className={`${styles.skeleton} ${styles.skeletonText}`} style={{width: 80, height: 30, borderRadius: 20}}></div>
+          ))}
+        </div>
+        <div className={styles.vehicleGrid}>
+          {[1,2,3].map(i => (
+            <div key={i} className={`${styles.skeleton} ${styles.skeletonBox}`}></div>
+          ))}
+        </div>
+      </main>
+    </div>
+  </div>
+);
+import Loading from '../loading';
 export default function Dashboard() {
   const router = useRouter();
   const [data, setData] = useState<any>(null);
@@ -22,7 +75,8 @@ export default function Dashboard() {
       return;
     }
 
-    fetch(`http://localhost:8000/api/dashboard_data.php?user_id=${userId}`)
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+    fetch(`${API_URL}/dashboard_data.php?user_id=${userId}`)
       .then(res => res.json())
       .then(result => {
         setData(result);
@@ -35,7 +89,7 @@ export default function Dashboard() {
   }, [router]);
 
   if (loading) {
-    return <div className={styles.loadingContainer}>Loading...</div>;
+    return <Loading />;
   }
 
   if (!data || !data.user) {
@@ -94,7 +148,7 @@ export default function Dashboard() {
             <div className={styles.bannerBottomInfo}>
               <div className={styles.profileDetailsDark}>
                 <h2>{data.user.name} <Shield size={18} className={styles.verifiedIcon} fill="var(--gold)" /></h2>
-                <p className={styles.handle}>{data.profile.handle}</p>
+                <p className={styles.handle}>@{data.user.name.toLowerCase().replace(/\s+/g, '')}</p>
                 <p className={styles.location}><MapPin size={14} /> {data.profile.location || 'Unknown Location'}</p>
                 <p className={styles.bio}>{data.profile.bio || 'Cars. Travel. Design. Sharing the journey one mile at a time.'}</p>
                 <div className={styles.tags}>
