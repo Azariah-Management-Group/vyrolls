@@ -329,7 +329,7 @@ export default function AddVehiclePage() {
               </div>
 
               <div className={styles.actionButtons}>
-                <div></div>
+                <button className={styles.btnSecondary} onClick={() => router.push('/dashboard')}>Cancel</button>
                 <button className={styles.btnPrimary} onClick={() => setStep(2)}>Next Step &rarr;</button>
               </div>
             </div>
