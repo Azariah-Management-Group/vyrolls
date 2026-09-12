@@ -244,3 +244,36 @@
   50% { opacity: 1; }
   100% { transform: translateX(100px); opacity: 0; }
 }
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+}
+.card {
+  background-color: #222;
+  border-radius: 8px;
+  padding: 20px;
+  border: 1px solid #333;
+}
+.roleSelect {
+  background-color: #333;
+  color: white;
+  border: 1px solid #444;
+  padding: 6px;
+  border-radius: 4px;
+  margin-right: 10px;
+}
+.permissionList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 15px;
+}
+.permissionItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.permissionItem input {
+  accent-color: var(--gold);
+}

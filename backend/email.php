@@ -19,15 +19,31 @@ function getEmailTemplate($content) {
 }
 
 function initMailer() {
+    global $pdo;
+    
+    // Fetch settings from DB
+    $settings = [];
+    if (isset($pdo)) {
+        $stmt = $pdo->query("SELECT key_name, key_value FROM site_settings WHERE key_name LIKE 'smtp_%'");
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $settings[$row['key_name']] = $row['key_value'];
+        }
+    }
+
     $mail = new PHPMailer(true);
     $mail->isSMTP();
-    $mail->Host       = 'smtp.gmail.com';
+    
+    // Use DB settings or fallback to defaults
+    $mail->Host       = $settings['smtp_host'] ?? 'smtp.gmail.com';
     $mail->SMTPAuth   = true;
-    $mail->Username   = 'podoremetropolis@gmail.com';
-    $mail->Password   = 'ptfjtrjyaidmyqrf';
-    $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
-    $mail->Port       = 465;
-    $mail->setFrom('podoremetropolis@gmail.com', 'Vyrolls');
+    $mail->Username   = $settings['smtp_username'] ?? 'podoremetropolis@gmail.com';
+    $mail->Password   = $settings['smtp_password'] ?? 'ptfjtrjyaidmyqrf';
+    
+    $enc = $settings['smtp_encryption'] ?? 'ssl';
+    $mail->SMTPSecure = ($enc === 'tls') ? PHPMailer::ENCRYPTION_STARTTLS : PHPMailer::ENCRYPTION_SMTPS;
+    
+    $mail->Port       = $settings['smtp_port'] ?? 465;
+    $mail->setFrom($mail->Username, 'Vyrolls');
     return $mail;
 }
 

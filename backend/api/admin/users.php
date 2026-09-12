@@ -69,6 +69,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             $stmt = $pdo->prepare("DELETE FROM users WHERE id = ?");
             $stmt->execute([$target_user_id]);
             echo json_encode(["message" => "User deleted successfully"]);
+        } elseif ($action === 'change_role') {
+            $role_name = $data['role_name'] ?? 'user';
+            $stmt = $pdo->prepare("UPDATE users SET role = ? WHERE id = ?");
+            $stmt->execute([$role_name, $target_user_id]);
+            echo json_encode(["message" => "User role updated successfully"]);
         } else {
             http_response_code(400);
             echo json_encode(["message" => "Invalid action"]);
