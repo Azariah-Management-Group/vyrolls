@@ -368,7 +368,7 @@ export default function AddVehiclePage() {
           <div className={styles.previewCard}>
             <div className={styles.previewHeader}>
               <h3>Listing Preview</h3>
-              <p>This is how your vehicle will appear on Autora.</p>
+              <p>This is how your vehicle will appear on Vyrolls.</p>
             </div>
             {imagePreviews.length > 0 ? (
               <img src={imagePreviews[0]} alt="Preview" className={styles.previewImage} />
@@ -381,14 +381,14 @@ export default function AddVehiclePage() {
                 <span className={styles.tagGreen}>Verified Seller</span>
               </div>
               <h4 className={styles.previewTitle}>
-                {formData.year || '2023'} {formData.make || 'Land Rover'} {formData.model || 'Range Rover'} <br/>{formData.trim_level || 'Autobiography'}
+                {formData.year || 'Year'} {formData.make || 'Make'} {formData.model || 'Model'} <br/>{formData.trim_level || 'Trim'}
               </h4>
-              <p className={styles.previewPrice}>${formData.price || '134,000'}</p>
+              <p className={styles.previewPrice}>${formData.price || '0'}</p>
               
               <div className={styles.previewSpecs}>
-                <div className={styles.specItem}><span style={{fontWeight: 600}}>Mi:</span> {formData.mileage || '12,500'}</div>
+                <div className={styles.specItem}><span style={{fontWeight: 600}}>Mi:</span> {formData.mileage || '0'}</div>
                 <div className={styles.specItem}><span style={{fontWeight: 600}}>Trans:</span> {formData.transmission}</div>
-                <div className={styles.specItem}><span style={{fontWeight: 600}}>Loc:</span> Los Angeles, CA</div>
+                <div className={styles.specItem}><span style={{fontWeight: 600}}>Loc:</span> City, State</div>
                 <div className={styles.specItem}><span style={{fontWeight: 600}}>Fuel:</span> {formData.fuel_type}</div>
               </div>
             </div>
