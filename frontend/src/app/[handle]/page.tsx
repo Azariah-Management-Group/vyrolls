@@ -18,6 +18,7 @@ export default function PublicProfile() {
   const [activeTab, setActiveTab] = useState('Overview');
   const [isFollowing, setIsFollowing] = useState(false);
   const [isFollowLoading, setIsFollowLoading] = useState(false);
+  const [isOwnProfile, setIsOwnProfile] = useState(false);
 
   useEffect(() => {
     // Viewer ID is optional for public viewing, but helps determine if they follow this person
@@ -43,6 +44,7 @@ export default function PublicProfile() {
       .then(result => {
         setData(result);
         setIsFollowing(result.is_following);
+        setIsOwnProfile(viewerId == result.user.id);
         setLoading(false);
       })
       .catch(err => {
@@ -108,7 +110,6 @@ export default function PublicProfile() {
   }
 
   // If the viewer is looking at their own profile, give them a button to go to their dashboard
-  const isOwnProfile = localStorage.getItem('user_id') == data.user.id;
 
   return (
     <div className={styles.dashboardContainer}>
