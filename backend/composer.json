@@ -1,0 +1,12 @@
+{
+    "name": "vyrolls/backend",
+    "authors": [
+        {
+            "name": "Taiwo Oladele",
+            "email": "taiwodele88@gmail.com"
+        }
+    ],
+    "require": {
+        "phpmailer/phpmailer": "^7.1"
+    }
+}

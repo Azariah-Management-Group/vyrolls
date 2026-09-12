@@ -9,13 +9,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-$db_host = 'localhost';
-$db_name = 'vyrolls_db';
-$db_user = 'root'; // Update with your MySQL user
-$db_pass = '';     // Update with your MySQL password
+$db_host = 'am7icf.h.filess.io';
+$db_port = '61001';
+$db_name = 'vyrolls_folksspeed';
+$db_user = 'vyrolls_folksspeed';
+$db_pass = 'a4656a1e37931270ea6e5b9744f7cbadf721f95b';
 
 try {
-    $pdo = new PDO("mysql:host=$db_host;dbname=$db_name", $db_user, $db_pass);
+    $pdo = new PDO("mysql:host=$db_host;port=$db_port;dbname=$db_name", $db_user, $db_pass);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 } catch (PDOException $e) {
     http_response_code(500);

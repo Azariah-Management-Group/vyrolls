@@ -1,0 +1,342 @@
+"use client";
+
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { 
+  Search, Bell, ChevronDown, MapPin, Camera, Edit2, Share, 
+  User, Car, FileText, ShoppingBag, Bookmark, Calendar, Shield, Settings,
+  ThumbsUp, MessageSquare, Share2
+} from 'lucide-react';
+import styles from './dashboard.module.css';
+
+export default function Dashboard() {
+  const router = useRouter();
+  const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('overview');
+
+  useEffect(() => {
+    const userId = localStorage.getItem('user_id');
+    if (!userId) {
+      router.push('/');
+      return;
+    }
+
+    fetch(`http://localhost:8000/api/dashboard_data.php?user_id=${userId}`)
+      .then(res => res.json())
+      .then(result => {
+        setData(result);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error(err);
+        setLoading(false);
+      });
+  }, [router]);
+
+  if (loading) {
+    return <div className={styles.loadingContainer}>Loading...</div>;
+  }
+
+  if (!data || !data.user) {
+    return <div className={styles.loadingContainer}>Error loading dashboard.</div>;
+  }
+
+  return (
+    <div className={styles.dashboardContainer}>
+      {/* Header */}
+      <header className={styles.header}>
+        <div className={styles.logo}>
+          <div className={styles.logoIcon} style={{fontFamily: "'Playfair Display', serif", color: "#d4af37", fontSize: "1.8rem", letterSpacing: "3px"}}>V</div>
+          <div className={styles.logoText}>
+            <span style={{fontFamily: "'Playfair Display', serif", letterSpacing: "3px"}}>VYROLLS</span>
+            <span className={styles.logoSub} style={{letterSpacing: "3px"}}>Drive Your World</span>
+          </div>
+        </div>
+        <nav className={styles.topNav}>
+          <a href="#">Vehicles</a>
+          <a href="#">Customize</a>
+          <a href="#">Services</a>
+          <a href="#">Marketplace</a>
+          <a href="#">Membership</a>
+          <a href="#">Community</a>
+          <a href="#">About</a>
+        </nav>
+        <div className={styles.headerActions}>
+          <Search size={20} className={styles.iconAction} />
+          <div className={styles.notification}>
+            <Bell size={20} className={styles.iconAction} />
+            <span className={styles.badge}>0</span>
+          </div>
+          <div className={styles.userDropdown}>
+            <img src={data.profile.avatar_url || "https://ui-avatars.com/api/?name="+data.user.name+"&background=random"} alt="User" />
+            <span>My Garage</span>
+            <ChevronDown size={16} />
+          </div>
+          <button className={styles.listBtn}>List Your Vehicle +</button>
+        </div>
+      </header>
+
+      {/* Profile Header Area (Banner + Stats Bar) */}
+      <div className={styles.profileHeaderSection}>
+        {/* Top Dark Banner */}
+        <div 
+          className={styles.bannerImage} 
+          style={{ backgroundImage: `url(${data.profile.cover_url || '/vyrolls_background_1789170713473.jpg'})` }}
+        >
+          <div className={styles.bannerOverlay}>
+            <div className={styles.bannerTopRight}>
+              <div className={styles.quote}>
+                &quot;Cars are more than machines.<br/>They&apos;re memories in motion.&quot;
+              </div>
+            </div>
+            
+            <div className={styles.bannerBottomInfo}>
+              <div className={styles.profileDetailsDark}>
+                <h2>{data.user.name} <Shield size={18} className={styles.verifiedIcon} fill="var(--gold)" /></h2>
+                <p className={styles.handle}>{data.profile.handle}</p>
+                <p className={styles.location}><MapPin size={14} /> {data.profile.location || 'Unknown Location'}</p>
+                <p className={styles.bio}>{data.profile.bio || 'Cars. Travel. Design. Sharing the journey one mile at a time.'}</p>
+                <div className={styles.tags}>
+                  <span className={styles.tag}>Collector</span>
+                  <span className={styles.tag}>Traveler</span>
+                  <span className={styles.tag}>Automotive Photographer</span>
+                  <span className={styles.tag}>EV Advocate</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <button className={styles.editBannerBtn}><Camera size={16} /> Edit Cover</button>
+        </div>
+
+        {/* Bottom White Stat Bar */}
+        <div className={styles.profileStatBar}>
+          <div className={styles.statBarContent}>
+            
+            <div className={styles.avatarWrapper}>
+              <img src={data.profile.avatar_url || "https://ui-avatars.com/api/?name="+data.user.name+"&background=random"} alt="Avatar" className={styles.avatar} />
+              <button className={styles.avatarEdit}><Camera size={16} /></button>
+            </div>
+
+            <div className={styles.bannerProfileStats}>
+              <div className={styles.statBox}>
+                <span className={styles.statNum}>{data.posts.length}</span>
+                <span className={styles.statLabel}>Posts</span>
+              </div>
+              <div className={styles.statBox}>
+                <span className={styles.statNum}>{data.stats.followers > 1000 ? (data.stats.followers/1000).toFixed(1)+'K' : data.stats.followers}</span>
+                <span className={styles.statLabel}>Followers</span>
+              </div>
+              <div className={styles.statBox}>
+                <span className={styles.statNum}>{data.stats.following}</span>
+                <span className={styles.statLabel}>Following</span>
+              </div>
+              <div className={styles.statBox}>
+                <span className={styles.statNum}>{data.vehicles.length}</span>
+                <span className={styles.statLabel}>Cars</span>
+              </div>
+              <div className={styles.membershipBox}>
+                <Shield size={32} className={styles.goldIcon} />
+                <div className={styles.memberText}>
+                  <span className={styles.memLevel}>Gold Member</span>
+                  <span className={styles.memSince}>Since {new Date(data.profile.member_since).toLocaleDateString(undefined, {month: 'short', year: 'numeric'})}</span>
+                </div>
+              </div>
+            </div>
+            
+            <div className={styles.bannerProfileActions}>
+              <button className={styles.editBtn}>Edit Profile</button>
+              <button className={styles.shareBtn}>Share Profile</button>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+
+      {/* Main Layout */}
+      <div className={styles.mainLayout}>
+        {/* Left Sidebar */}
+        <aside className={`${styles.leftSidebar} ${styles.slideInLeft} ${styles.delay2}`}>
+
+          <nav className={styles.sideNav}>
+            <a href="#" className={styles.active}><User size={18} /> Profile</a>
+            <a href="#"><Car size={18} /> My Garage</a>
+            <a href="#"><FileText size={18} /> Posts</a>
+            <a href="#"><ShoppingBag size={18} /> Marketplace</a>
+            <a href="#"><Bookmark size={18} /> Saved</a>
+            <a href="#"><Calendar size={18} /> Events</a>
+            <a href="#"><Shield size={18} /> Badges</a>
+            <a href="#"><Settings size={18} /> Settings</a>
+          </nav>
+
+          <div className={styles.adCard}>
+            <h3>A HIGHER STANDARD TOGETHER.</h3>
+            <p>Connect. Drive. Belong.</p>
+            <button>Upgrade Membership &rarr;</button>
+          </div>
+        </aside>
+
+        {/* Center Content */}
+        <main className={`${styles.mainContent} ${styles.fadeInUp} ${styles.delay3}`}>
+          <div className={styles.tabs}>
+            <button className={activeTab === 'overview' ? styles.activeTab : ''} onClick={() => setActiveTab('overview')}>Overview</button>
+            <button>Garage ({data.vehicles.length})</button>
+            <button>Posts ({data.posts.length})</button>
+            <button>Activity</button>
+            <button>Reviews ({data.stats.reviews})</button>
+            <button>Following ({data.stats.following})</button>
+            <button>Followers ({data.stats.followers})</button>
+          </div>
+
+          <div className={styles.sectionHeader}>
+            <h3>Featured Vehicles</h3>
+            <a href="#" className={styles.viewAll}>View All &rarr;</a>
+          </div>
+
+          <div className={styles.vehicleGrid}>
+            {data.vehicles.length === 0 ? (
+              <div className={styles.emptyState}>No vehicles added to garage yet.</div>
+            ) : (
+              data.vehicles.slice(0,3).map((vehicle: any) => (
+                <div key={vehicle.id} className={styles.vehicleCard}>
+                  <div className={styles.vehicleImage} style={{ backgroundImage: `url(${vehicle.image_url})` }}>
+                    <div className={styles.vehicleFeatureBadge}>Featured</div>
+                  </div>
+                  <div className={styles.vehicleInfo}>
+                    <h4>{vehicle.name}</h4>
+                    <p>{vehicle.engine} | {vehicle.mileage}</p>
+                    <div className={styles.vehicleTags}>
+                      <span className={styles.tagPersonal}>{vehicle.type_tag}</span>
+                      <span className={styles.tagSale}>{vehicle.status_tag}</span>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
+          <div className={styles.sectionHeader}>
+            <h3>Recent Activity</h3>
+            <div className={styles.activityFilters}>
+              <button className={styles.activeFilter}>All</button>
+              <button>Posts</button>
+              <button>Trades</button>
+              <button>Reviews</button>
+              <button>Event Activity</button>
+            </div>
+            <a href="#" className={styles.viewAll}>View All &rarr;</a>
+          </div>
+
+          <div className={styles.activityGrid}>
+             {data.posts.length === 0 ? (
+              <div className={styles.emptyState}>No posts yet.</div>
+             ) : (
+               data.posts.map((post: any) => (
+                 <div key={post.id} className={styles.postCard}>
+                   <div className={styles.postHeader}>
+                     <img src={data.profile.avatar_url || "https://ui-avatars.com/api/?name="+data.user.name} alt="" />
+                     <div className={styles.postMeta}>
+                       <h4>{data.user.name} <Shield size={12} className={styles.verifiedIcon} fill="var(--gold)" /></h4>
+                       <span>{data.profile.handle} &bull; 2h ago</span>
+                     </div>
+                   </div>
+                   <p className={styles.postContent}>{post.content}</p>
+                   {post.image_url && (
+                     <div className={styles.postImage} style={{ backgroundImage: `url(${post.image_url})` }} />
+                   )}
+                   <div className={styles.postActions}>
+                     <span><ThumbsUp size={16} /> {post.likes_count}</span>
+                     <span><MessageSquare size={16} /> {post.comments_count}</span>
+                     <span><Share2 size={16} /> {post.shares_count}</span>
+                   </div>
+                 </div>
+               ))
+             )}
+          </div>
+        </main>
+
+        {/* Right Sidebar */}
+        <aside className={`${styles.rightSidebar} ${styles.slideInRight} ${styles.delay4}`}>
+          <div className={styles.widget}>
+            <div className={styles.widgetHeader}>
+              <h3>Reputation & Stats</h3>
+              <a href="#" className={styles.viewAll}>View All &rarr;</a>
+            </div>
+            <div className={styles.statsGrid}>
+              <div className={styles.statItem}>
+                <Shield size={24} className={styles.goldIcon} />
+                <span className={styles.statValue}>{data.stats.community_rank}</span>
+                <span className={styles.statDesc}>Community Rank</span>
+              </div>
+              <div className={styles.statItem}>
+                <span className={styles.statValueGold}>{data.stats.avg_rating} ({data.stats.reviews})</span>
+                <span className={styles.statDesc}>Avg. Rating</span>
+              </div>
+              <div className={styles.statItem}>
+                <span className={styles.statValueGold}>{data.stats.successful_trades}</span>
+                <span className={styles.statDesc}>Successful Trades</span>
+              </div>
+            </div>
+          </div>
+
+          <div className={styles.widget}>
+            <div className={styles.widgetHeader}>
+              <h3>Badges ({data.badges.length})</h3>
+              <a href="#" className={styles.viewAll}>View All &rarr;</a>
+            </div>
+            <div className={styles.badgesList}>
+              {data.badges.length === 0 ? (
+                <div className={styles.emptyStateSmall}>No badges earned yet.</div>
+              ) : (
+                data.badges.map((b:any, i:number) => (
+                  <div key={i} className={styles.badgeItem}>
+                    <Shield size={32} className={styles.goldIcon} />
+                    <span>{b.badge_name}</span>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+
+          <div className={styles.widget}>
+            <div className={styles.widgetHeader}>
+              <h3>My Communities</h3>
+              <a href="#" className={styles.viewAll}>Manage &rarr;</a>
+            </div>
+            <div className={styles.communityList}>
+              {data.communities.length === 0 ? (
+                <div className={styles.emptyStateSmall}>No communities joined.</div>
+              ) : (
+                data.communities.map((c: any) => (
+                  <div key={c.id} className={styles.communityItem}>
+                    <img src={c.image_url} alt="" />
+                    <div className={styles.communityInfo}>
+                      <h4>{c.name}</h4>
+                      <span>{c.real_member_count} members</span>
+                    </div>
+                    <button className={c.is_joined ? styles.joinedBtn : styles.joinBtn}>
+                      {c.is_joined ? 'Joined' : '+ Join'}
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+            <a href="#" className={styles.viewAllLink}>View All Communities &rarr;</a>
+          </div>
+
+          <div className={styles.inviteWidget}>
+            <div className={styles.inviteIcon}>
+               <User size={24} />
+            </div>
+            <div className={styles.inviteContent}>
+              <h4>Invite Friends</h4>
+              <p>Grow the community. Share your passion.</p>
+              <button>Invite Friends &rarr;</button>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+  );
+}

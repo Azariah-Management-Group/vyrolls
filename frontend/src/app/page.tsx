@@ -1,9 +1,11 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { User, Mail, Lock, Eye } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { User, Mail, Lock, Eye, EyeOff } from 'lucide-react';
 
 export default function Home() {
+  const router = useRouter();
   const wheelRef = useRef<HTMLDivElement>(null);
   const signUpRef = useRef<HTMLDivElement>(null);
   const signInRef = useRef<HTMLDivElement>(null);
@@ -11,7 +13,219 @@ export default function Home() {
   const [rotation, setRotation] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [startAngle, setStartAngle] = useState(0);
-  const [authMode, setAuthMode] = useState<'signup' | 'signin'>('signup');
+  const [authMode, setAuthMode] = useState<'signup' | 'signin' | 'verify' | 'forgot' | 'verify_reset' | 'reset'>('signup');
+  const [verifyOrigin, setVerifyOrigin] = useState<'signup' | 'signin' | null>(null);
+  const [pendingEmail, setPendingEmail] = useState('');
+  const [otp, setOtp] = useState('');
+
+  // Sign Up Form State
+  const [signUpName, setSignUpName] = useState('');
+  const [signUpEmail, setSignUpEmail] = useState('');
+  const [signUpPassword, setSignUpPassword] = useState('');
+  const [signUpConfirmPassword, setSignUpConfirmPassword] = useState('');
+  const [showSignUpPassword, setShowSignUpPassword] = useState(false);
+  const [showSignUpConfirmPassword, setShowSignUpConfirmPassword] = useState(false);
+  
+  // Sign In Form State
+  const [signInEmail, setSignInEmail] = useState('');
+  const [signInPassword, setSignInPassword] = useState('');
+  const [showSignInPassword, setShowSignInPassword] = useState(false);
+  
+  const [loading, setLoading] = useState(false);
+  const [signUpMessage, setSignUpMessage] = useState('');
+  const [signInMessage, setSignInMessage] = useState('');
+  const [verifyMessage, setVerifyMessage] = useState('');
+  
+  // Forgot Password Form State
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [forgotMessage, setForgotMessage] = useState('');
+
+  // Reset Password Form State
+  const [resetMessage, setResetMessage] = useState('');
+  const [verifyResetMessage, setVerifyResetMessage] = useState('');
+  const [resetOtp, setResetOtp] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false);
+
+  const API_URL = 'http://localhost:8000/api'; // PHP Backend URL
+
+  const handleSignUp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (signUpPassword !== signUpConfirmPassword) {
+      setSignUpMessage('Passwords do not match');
+      return;
+    }
+    const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+    if (!strongPasswordRegex.test(signUpPassword)) {
+      setSignUpMessage('Password must be at least 8 characters and include an uppercase letter, a lowercase letter, and a number');
+      return;
+    }
+    setLoading(true);
+    setSignUpMessage('');
+    try {
+      const res = await fetch(`${API_URL}/signup.php`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: signUpName, email: signUpEmail, password: signUpPassword })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        if (data.requireOtp) {
+          setVerifyMessage(data.message);
+          setPendingEmail(data.email);
+          setVerifyOrigin('signup');
+          setTimeout(() => setAuthMode('verify'), 1500);
+        } else {
+          setSignInMessage('Sign up successful! Please check your email.');
+          setTimeout(() => setAuthMode('signin'), 2000);
+        }
+      } else {
+        setSignUpMessage(data.message || 'Sign up failed');
+      }
+    } catch (err) {
+      setSignUpMessage('Error connecting to server');
+    }
+    setLoading(false);
+  };
+
+  const handleSignIn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setSignInMessage('');
+    try {
+      const res = await fetch(`${API_URL}/signin.php`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: signInEmail, password: signInPassword })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        if (data.requireOtp) {
+          setVerifyMessage(data.message);
+          setPendingEmail(data.email);
+          setVerifyOrigin('signin');
+          setTimeout(() => setAuthMode('verify'), 1500);
+        } else {
+          setSignInMessage('Sign in successful! Welcome back.');
+          localStorage.setItem('user_id', data.user.id);
+          router.push('/dashboard');
+        }
+      } else {
+        setSignInMessage(data.message || 'Sign in failed');
+      }
+    } catch (err) {
+      setSignInMessage('Error connecting to server');
+    }
+    setLoading(false);
+  };
+
+  const handleVerifyOTP = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setVerifyMessage('');
+    try {
+      const res = await fetch(`${API_URL}/verify_otp.php`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: pendingEmail, otp })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setVerifyMessage('Verification successful!');
+        localStorage.setItem('user_id', data.user.id);
+        router.push('/dashboard');
+      } else {
+        setVerifyMessage(data.message || 'Verification failed');
+      }
+    } catch (err) {
+      setVerifyMessage('Error connecting to server');
+    }
+    setLoading(false);
+  };
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setForgotMessage('');
+    try {
+      const res = await fetch(`${API_URL}/forgot_password.php`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: forgotEmail })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setForgotMessage(data.message);
+        setPendingEmail(forgotEmail);
+        setTimeout(() => setAuthMode('verify_reset'), 1500);
+      } else {
+        setForgotMessage(data.message || 'Failed to send request');
+      }
+    } catch (err) {
+      setForgotMessage('Error connecting to server');
+    }
+    setLoading(false);
+  };
+
+  const handleVerifyResetOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setVerifyResetMessage('');
+    try {
+      const res = await fetch(`${API_URL}/verify_reset_otp.php`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: pendingEmail, otp: resetOtp })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setVerifyResetMessage(data.message);
+        setTimeout(() => setAuthMode('reset'), 1500);
+      } else {
+        setVerifyResetMessage(data.message || 'Verification failed');
+      }
+    } catch (err) {
+      setVerifyResetMessage('Error connecting to server');
+    }
+    setLoading(false);
+  };
+
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newPassword !== confirmNewPassword) {
+      setResetMessage('Passwords do not match');
+      return;
+    }
+    const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+    if (!strongPasswordRegex.test(newPassword)) {
+      setResetMessage('Password must be at least 8 characters and include an uppercase letter, a lowercase letter, and a number');
+      return;
+    }
+    setLoading(true);
+    setResetMessage('');
+    try {
+      const res = await fetch(`${API_URL}/reset_password.php`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: pendingEmail, otp: resetOtp, new_password: newPassword })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setResetMessage('Password successfully reset! You can now sign in.');
+        setTimeout(() => {
+            setAuthMode('signin');
+            setSignInMessage('Password reset successfully. Please sign in with your new password.');
+        }, 2000);
+      } else {
+        setResetMessage(data.message || 'Password reset failed');
+      }
+    } catch (err) {
+      setResetMessage('Error connecting to server');
+    }
+    setLoading(false);
+  };
 
   const calculateAngle = (e: PointerEvent | React.PointerEvent) => {
     if (!wheelRef.current) return 0;
@@ -97,37 +311,56 @@ export default function Home() {
         {/* Left Panel: Sign Up (Desktop Only) */}
         <div className="panel-container desktop-only" ref={signUpRef}>
           <div className="glass-panel animate-text" style={{ padding: '2.5rem', animationDelay: '0.1s', transition: 'box-shadow 0.3s' }}>
-            <h5 className="animate-text" style={{ textTransform: 'uppercase', fontSize: '0.75rem', letterSpacing: '2px', color: 'var(--gold-primary)', marginBottom: '0.5rem', animationDelay: '0.2s' }}>Join the Ecosystem</h5>
-            <h2 className="serif animate-text" style={{ fontSize: '2.5rem', marginBottom: '0.5rem', animationDelay: '0.3s' }}>Sign Up</h2>
-            <p className="animate-text" style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '2rem', textTransform: 'uppercase', letterSpacing: '1px', animationDelay: '0.4s' }}>Create Your Account</p>
+            <h5 className="animate-text" style={{ textTransform: 'uppercase', fontSize: '0.75rem', letterSpacing: '2px', color: 'var(--gold-primary)', marginBottom: '0.5rem', animationDelay: '0.2s' }}>{authMode === 'verify' && verifyOrigin === 'signup' ? 'Verification' : 'Join the Ecosystem'}</h5>
+            <h2 className="serif animate-text" style={{ fontSize: '2.5rem', marginBottom: '0.5rem', animationDelay: '0.3s' }}>{authMode === 'verify' && verifyOrigin === 'signup' ? 'Verify Email' : 'Sign Up'}</h2>
+            <p className="animate-text" style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '2rem', textTransform: 'uppercase', letterSpacing: '1px', animationDelay: '0.4s' }}>{authMode === 'verify' && verifyOrigin === 'signup' ? 'Check your inbox' : 'Create Your Account'}</p>
             
-            <form>
-              <div className="input-group">
-                <User size={18} className="input-icon" />
-                <input type="text" placeholder="Full Name" className="input-field" />
-              </div>
-              
-              <div className="input-group">
-                <Mail size={18} className="input-icon" />
-                <input type="email" placeholder="Email" className="input-field" />
-              </div>
-              
-              <div className="input-group">
-                <Lock size={18} className="input-icon" />
-                <input type="password" placeholder="Password" className="input-field" />
-                <Eye size={16} style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)', cursor: 'pointer' }} />
-              </div>
-              
-              <div className="input-group">
-                <Lock size={18} className="input-icon" />
-                <input type="password" placeholder="Confirm Password" className="input-field" />
-                <Eye size={16} style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)', cursor: 'pointer' }} />
-              </div>
-              
-              <button type="button" className="btn-primary" style={{ marginTop: '1rem' }}>
-                Join VyRolls &rarr;
-              </button>
-            </form>
+            {authMode === 'verify' && verifyOrigin === 'signup' ? (
+              <form onSubmit={handleVerifyOTP}>
+                {verifyMessage && <p style={{color: verifyMessage.includes('failed') || verifyMessage.includes('Error') || verifyMessage.includes('Invalid') ? '#ff4b4b' : '#4bff4b', fontSize: '0.85rem', marginBottom: '1rem', textAlign: 'center'}}>{verifyMessage}</p>}
+                <div className="input-group">
+                  <Lock size={18} className="input-icon" />
+                  <input type="text" placeholder="6-Digit Verification Code" className="input-field" value={otp} onChange={e => setOtp(e.target.value)} maxLength={6} required style={{ letterSpacing: '2px', fontWeight: 'bold' }} />
+                </div>
+                
+                <button type="submit" className="btn-primary" style={{ marginTop: '1rem' }} disabled={loading}>
+                  {loading ? 'Verifying...' : <>Verify Account &rarr;</>}
+                </button>
+              </form>
+            ) : (
+              <form onSubmit={handleSignUp}>
+                {signUpMessage && <p style={{color: signUpMessage.includes('failed') || signUpMessage.includes('match') || signUpMessage.includes('Error') || signUpMessage.includes('already') || signUpMessage.includes('must') || signUpMessage.includes('Invalid') ? '#ff4b4b' : '#4bff4b', fontSize: '0.85rem', marginBottom: '1rem', textAlign: 'center'}}>{signUpMessage}</p>}
+                <div className="input-group">
+                  <User size={18} className="input-icon" />
+                  <input type="text" placeholder="Full Name" className="input-field" value={signUpName} onChange={e => setSignUpName(e.target.value)} required />
+                </div>
+                
+                <div className="input-group">
+                  <Mail size={18} className="input-icon" />
+                  <input type="email" placeholder="Email" className="input-field" value={signUpEmail} onChange={e => setSignUpEmail(e.target.value)} required />
+                </div>
+                
+                <div className="input-group">
+                  <Lock size={18} className="input-icon" />
+                  <input type={showSignUpPassword ? "text" : "password"} placeholder="Password" className="input-field" value={signUpPassword} onChange={e => setSignUpPassword(e.target.value)} required />
+                  <div onClick={() => setShowSignUpPassword(!showSignUpPassword)} style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', cursor: 'pointer', display: 'flex' }}>
+                    {showSignUpPassword ? <EyeOff size={16} color="var(--text-secondary)" /> : <Eye size={16} color="var(--text-secondary)" />}
+                  </div>
+                </div>
+                
+                <div className="input-group">
+                  <Lock size={18} className="input-icon" />
+                  <input type={showSignUpConfirmPassword ? "text" : "password"} placeholder="Confirm Password" className="input-field" value={signUpConfirmPassword} onChange={e => setSignUpConfirmPassword(e.target.value)} required />
+                  <div onClick={() => setShowSignUpConfirmPassword(!showSignUpConfirmPassword)} style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', cursor: 'pointer', display: 'flex' }}>
+                    {showSignUpConfirmPassword ? <EyeOff size={16} color="var(--text-secondary)" /> : <Eye size={16} color="var(--text-secondary)" />}
+                  </div>
+                </div>
+                
+                <button type="submit" className="btn-primary" style={{ marginTop: '1rem' }} disabled={loading}>
+                  {loading ? 'Processing...' : <>Join VyRolls &rarr;</>}
+                </button>
+              </form>
+            )}
             
             <div className="divider">or continue with</div>
             
@@ -222,34 +455,101 @@ export default function Home() {
         {/* Right Panel: Sign In (Desktop Only) */}
         <div className="panel-container desktop-only" ref={signInRef}>
           <div className="glass-panel animate-text" style={{ padding: '2.5rem', animationDelay: '0.1s', transition: 'box-shadow 0.3s' }}>
-            <h5 className="animate-text" style={{ textTransform: 'uppercase', fontSize: '0.75rem', letterSpacing: '2px', color: 'var(--gold-primary)', marginBottom: '0.5rem', animationDelay: '0.2s' }}>Welcome Back</h5>
-            <h2 className="serif animate-text" style={{ fontSize: '2.5rem', marginBottom: '0.5rem', animationDelay: '0.3s' }}>Sign In</h2>
-            <p className="animate-text" style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '2rem', textTransform: 'uppercase', letterSpacing: '1px', animationDelay: '0.4s' }}>Access Your World</p>
+            <h5 className="animate-text" style={{ textTransform: 'uppercase', fontSize: '0.75rem', letterSpacing: '2px', color: 'var(--gold-primary)', marginBottom: '0.5rem', animationDelay: '0.2s' }}>{authMode === 'verify' && verifyOrigin === 'signin' ? 'Verification' : authMode === 'forgot' ? 'Account Recovery' : authMode === 'verify_reset' ? 'Verify Code' : authMode === 'reset' ? 'New Password' : 'Welcome Back'}</h5>
+            <h2 className="serif animate-text" style={{ fontSize: '2.5rem', marginBottom: '0.5rem', animationDelay: '0.3s' }}>{authMode === 'verify' && verifyOrigin === 'signin' ? 'Verify Email' : authMode === 'forgot' ? 'Forgot Password' : authMode === 'verify_reset' ? 'Verify Reset Code' : authMode === 'reset' ? 'Reset Password' : 'Sign In'}</h2>
+            <p className="animate-text" style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '2rem', textTransform: 'uppercase', letterSpacing: '1px', animationDelay: '0.4s' }}>{authMode === 'verify' && verifyOrigin === 'signin' ? 'Check your inbox' : authMode === 'forgot' ? 'Enter your email' : authMode === 'verify_reset' ? 'Enter the 6-digit code' : authMode === 'reset' ? 'Create new password' : 'Access Your World'}</p>
             
-            <form>
-              <div className="input-group">
-                <Mail size={18} className="input-icon" />
-                <input type="email" placeholder="Email" className="input-field" />
-              </div>
-              
-              <div className="input-group">
-                <Lock size={18} className="input-icon" />
-                <input type="password" placeholder="Password" className="input-field" />
-                <Eye size={16} style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)', cursor: 'pointer' }} />
-              </div>
-              
-              <div className="checkbox-group">
-                <label className="checkbox-wrapper">
-                  <input type="checkbox" className="custom-checkbox" />
-                  <span>Remember me</span>
-                </label>
-                <a href="#">Forgot password?</a>
-              </div>
-              
-              <button type="button" className="btn-primary" style={{ marginTop: '1rem' }}>
-                Sign In &rarr;
-              </button>
-            </form>
+            {authMode === 'verify' && verifyOrigin === 'signin' ? (
+              <form onSubmit={handleVerifyOTP}>
+                {verifyMessage && <p style={{color: verifyMessage.includes('failed') || verifyMessage.includes('Error') || verifyMessage.includes('Invalid') ? '#ff4b4b' : '#4bff4b', fontSize: '0.85rem', marginBottom: '1rem', textAlign: 'center'}}>{verifyMessage}</p>}
+                <div className="input-group">
+                  <Lock size={18} className="input-icon" />
+                  <input type="text" placeholder="6-Digit Verification Code" className="input-field" value={otp} onChange={e => setOtp(e.target.value)} maxLength={6} required style={{ letterSpacing: '2px', fontWeight: 'bold' }} />
+                </div>
+                
+                <button type="submit" className="btn-primary" style={{ marginTop: '1rem' }} disabled={loading}>
+                  {loading ? 'Verifying...' : <>Verify Sign In &rarr;</>}
+                </button>
+              </form>
+            ) : authMode === 'forgot' ? (
+              <form onSubmit={handleForgotPassword}>
+                {forgotMessage && <p style={{color: forgotMessage.includes('failed') || forgotMessage.includes('Error') || forgotMessage.includes('not found') ? '#ff4b4b' : '#4bff4b', fontSize: '0.85rem', marginBottom: '1rem', textAlign: 'center'}}>{forgotMessage}</p>}
+                <div className="input-group">
+                  <Mail size={18} className="input-icon" />
+                  <input type="email" placeholder="Enter your email" className="input-field" value={forgotEmail} onChange={e => setForgotEmail(e.target.value)} required />
+                </div>
+                
+                <button type="submit" className="btn-primary" style={{ marginTop: '1rem' }} disabled={loading}>
+                  {loading ? 'Sending...' : <>Send Reset Code &rarr;</>}
+                </button>
+                <div style={{ textAlign: 'center', marginTop: '1rem' }}>
+                  <a href="#" onClick={(e) => { e.preventDefault(); setAuthMode('signin'); }} style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', textDecoration: 'none' }}>Back to Sign In</a>
+                </div>
+              </form>
+            ) : authMode === 'verify_reset' ? (
+              <form onSubmit={handleVerifyResetOtp}>
+                {verifyResetMessage && <p style={{color: verifyResetMessage.includes('failed') || verifyResetMessage.includes('Error') || verifyResetMessage.includes('Invalid') ? '#ff4b4b' : '#4bff4b', fontSize: '0.85rem', marginBottom: '1rem', textAlign: 'center'}}>{verifyResetMessage}</p>}
+                <div className="input-group">
+                  <Lock size={18} className="input-icon" />
+                  <input type="text" placeholder="6-Digit Reset Code" className="input-field" value={resetOtp} onChange={e => setResetOtp(e.target.value)} maxLength={6} required style={{ letterSpacing: '2px', fontWeight: 'bold' }} />
+                </div>
+                <button type="submit" className="btn-primary" style={{ marginTop: '1rem' }} disabled={loading}>
+                  {loading ? 'Verifying...' : <>Verify Code &rarr;</>}
+                </button>
+              </form>
+            ) : authMode === 'reset' ? (
+              <form onSubmit={handleResetPassword}>
+                {resetMessage && <p style={{color: resetMessage.includes('failed') || resetMessage.includes('Error') || resetMessage.includes('match') || resetMessage.includes('must') || resetMessage.includes('Invalid') ? '#ff4b4b' : '#4bff4b', fontSize: '0.85rem', marginBottom: '1rem', textAlign: 'center'}}>{resetMessage}</p>}
+
+                <div className="input-group">
+                  <Lock size={18} className="input-icon" />
+                  <input type={showNewPassword ? "text" : "password"} placeholder="New Password" className="input-field" value={newPassword} onChange={e => setNewPassword(e.target.value)} required />
+                  <div onClick={() => setShowNewPassword(!showNewPassword)} style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', cursor: 'pointer', display: 'flex' }}>
+                    {showNewPassword ? <EyeOff size={16} color="var(--text-secondary)" /> : <Eye size={16} color="var(--text-secondary)" />}
+                  </div>
+                </div>
+
+                <div className="input-group">
+                  <Lock size={18} className="input-icon" />
+                  <input type={showConfirmNewPassword ? "text" : "password"} placeholder="Confirm New Password" className="input-field" value={confirmNewPassword} onChange={e => setConfirmNewPassword(e.target.value)} required />
+                  <div onClick={() => setShowConfirmNewPassword(!showConfirmNewPassword)} style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', cursor: 'pointer', display: 'flex' }}>
+                    {showConfirmNewPassword ? <EyeOff size={16} color="var(--text-secondary)" /> : <Eye size={16} color="var(--text-secondary)" />}
+                  </div>
+                </div>
+                
+                <button type="submit" className="btn-primary" style={{ marginTop: '1rem' }} disabled={loading}>
+                  {loading ? 'Resetting...' : <>Reset Password &rarr;</>}
+                </button>
+              </form>
+            ) : (
+              <form onSubmit={handleSignIn}>
+                {signInMessage && <p style={{color: signInMessage.includes('failed') || signInMessage.includes('Error') || signInMessage.includes('Invalid') || signInMessage.includes('unverified') ? '#ff4b4b' : '#4bff4b', fontSize: '0.85rem', marginBottom: '1rem', textAlign: 'center'}}>{signInMessage}</p>}
+                <div className="input-group">
+                  <Mail size={18} className="input-icon" />
+                  <input type="email" placeholder="Email" className="input-field" value={signInEmail} onChange={e => setSignInEmail(e.target.value)} required />
+                </div>
+                
+                <div className="input-group">
+                  <Lock size={18} className="input-icon" />
+                  <input type={showSignInPassword ? "text" : "password"} placeholder="Password" className="input-field" value={signInPassword} onChange={e => setSignInPassword(e.target.value)} required />
+                  <div onClick={() => setShowSignInPassword(!showSignInPassword)} style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', cursor: 'pointer', display: 'flex' }}>
+                    {showSignInPassword ? <EyeOff size={16} color="var(--text-secondary)" /> : <Eye size={16} color="var(--text-secondary)" />}
+                  </div>
+                </div>
+                
+                <div className="checkbox-group">
+                  <label className="checkbox-wrapper">
+                    <input type="checkbox" className="custom-checkbox" />
+                    <span>Remember me</span>
+                  </label>
+                  <a href="#" onClick={(e) => { e.preventDefault(); setAuthMode('forgot'); }} style={{ color: 'var(--gold-primary)', fontSize: '0.75rem', textDecoration: 'none' }}>Forgot password?</a>
+                </div>
+                
+                <button type="submit" className="btn-primary" style={{ marginTop: '1rem' }} disabled={loading}>
+                  {loading ? 'Processing...' : <>Sign In &rarr;</>}
+                </button>
+              </form>
+            )}
             
             <div className="divider">or continue with</div>
             
@@ -276,52 +576,148 @@ export default function Home() {
                <button type="button" className={`auth-toggle-btn ${authMode === 'signin' ? 'active' : ''}`} onClick={() => setAuthMode('signin')}>Sign In</button>
              </div>
              
-             {authMode === 'signup' ? (
+             {authMode === 'signup' && (
                <>
                  <h5 className="serif animate-text" style={{ fontSize: '1.2rem', color: 'var(--gold-primary)', textAlign: 'center', marginBottom: '0.2rem' }}>Join the VyRolls Ecosystem</h5>
                  <p className="animate-text" style={{ fontSize: '0.6rem', color: 'var(--text-secondary)', marginBottom: '1.5rem', textTransform: 'uppercase', letterSpacing: '1px', textAlign: 'center' }}>More than a drive. A higher standard.</p>
-                 <form>
+                 <form onSubmit={handleSignUp}>
+                    {signUpMessage && <p style={{color: signUpMessage.includes('failed') || signUpMessage.includes('match') || signUpMessage.includes('Error') || signUpMessage.includes('already') || signUpMessage.includes('must') || signUpMessage.includes('Invalid') ? '#ff4b4b' : '#4bff4b', fontSize: '0.75rem', marginBottom: '1rem', textAlign: 'center'}}>{signUpMessage}</p>}
                     <div className="input-group" style={{ marginBottom: '1rem' }}>
                       <User size={16} className="input-icon" />
-                      <input type="text" placeholder="Full Name" className="input-field" style={{ padding: '0.6rem 1rem 0.6rem 2.2rem', fontSize: '0.85rem' }} />
+                      <input type="text" placeholder="Full Name" className="input-field" style={{ padding: '0.6rem 1rem 0.6rem 2.2rem', fontSize: '0.85rem' }} value={signUpName} onChange={e => setSignUpName(e.target.value)} required />
                     </div>
                     <div className="input-group" style={{ marginBottom: '1rem' }}>
                       <Mail size={16} className="input-icon" />
-                      <input type="email" placeholder="Email Address" className="input-field" style={{ padding: '0.6rem 1rem 0.6rem 2.2rem', fontSize: '0.85rem' }} />
+                      <input type="email" placeholder="Email Address" className="input-field" style={{ padding: '0.6rem 1rem 0.6rem 2.2rem', fontSize: '0.85rem' }} value={signUpEmail} onChange={e => setSignUpEmail(e.target.value)} required />
                     </div>
                     <div className="input-group" style={{ marginBottom: '1rem' }}>
                       <Lock size={16} className="input-icon" />
-                      <input type="password" placeholder="Password" className="input-field" style={{ padding: '0.6rem 1rem 0.6rem 2.2rem', fontSize: '0.85rem' }} />
-                      <Eye size={14} style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)', cursor: 'pointer' }} />
+                      <input type={showSignUpPassword ? "text" : "password"} placeholder="Password" className="input-field" style={{ padding: '0.6rem 1rem 0.6rem 2.2rem', fontSize: '0.85rem' }} value={signUpPassword} onChange={e => setSignUpPassword(e.target.value)} required />
+                      <div onClick={() => setShowSignUpPassword(!showSignUpPassword)} style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', cursor: 'pointer', display: 'flex' }}>
+                        {showSignUpPassword ? <EyeOff size={14} color="var(--text-secondary)" /> : <Eye size={14} color="var(--text-secondary)" />}
+                      </div>
                     </div>
                     <div className="input-group" style={{ marginBottom: '1rem' }}>
                       <Lock size={16} className="input-icon" />
-                      <input type="password" placeholder="Confirm Password" className="input-field" style={{ padding: '0.6rem 1rem 0.6rem 2.2rem', fontSize: '0.85rem' }} />
-                      <Eye size={14} style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)', cursor: 'pointer' }} />
+                      <input type={showSignUpConfirmPassword ? "text" : "password"} placeholder="Confirm Password" className="input-field" style={{ padding: '0.6rem 1rem 0.6rem 2.2rem', fontSize: '0.85rem' }} value={signUpConfirmPassword} onChange={e => setSignUpConfirmPassword(e.target.value)} required />
+                      <div onClick={() => setShowSignUpConfirmPassword(!showSignUpConfirmPassword)} style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', cursor: 'pointer', display: 'flex' }}>
+                        {showSignUpConfirmPassword ? <EyeOff size={14} color="var(--text-secondary)" /> : <Eye size={14} color="var(--text-secondary)" />}
+                      </div>
                     </div>
-                    <button type="button" className="btn-primary" style={{ marginTop: '0.5rem', padding: '0.7rem' }}>
-                      Join VyRolls &rarr;
+                    <button type="submit" className="btn-primary" style={{ marginTop: '0.5rem', padding: '0.7rem' }} disabled={loading}>
+                      {loading ? 'Processing...' : <>Join VyRolls &rarr;</>}
                     </button>
                  </form>
                </>
-             ) : (
+             )}
+             
+             {authMode === 'signin' && (
                <>
                  <h5 className="serif animate-text" style={{ fontSize: '1.2rem', color: 'var(--gold-primary)', textAlign: 'center', marginBottom: '0.2rem' }}>Welcome Back</h5>
                  <p className="animate-text" style={{ fontSize: '0.6rem', color: 'var(--text-secondary)', marginBottom: '1.5rem', textTransform: 'uppercase', letterSpacing: '1px', textAlign: 'center' }}>Access Your World.</p>
-                 <form>
+                 <form onSubmit={handleSignIn}>
+                    {signInMessage && <p style={{color: signInMessage.includes('failed') || signInMessage.includes('Error') || signInMessage.includes('Invalid') || signInMessage.includes('unverified') ? '#ff4b4b' : '#4bff4b', fontSize: '0.75rem', marginBottom: '1rem', textAlign: 'center'}}>{signInMessage}</p>}
                     <div className="input-group" style={{ marginBottom: '1rem' }}>
                       <Mail size={16} className="input-icon" />
-                      <input type="email" placeholder="Email Address" className="input-field" style={{ padding: '0.6rem 1rem 0.6rem 2.2rem', fontSize: '0.85rem' }} />
+                      <input type="email" placeholder="Email Address" className="input-field" style={{ padding: '0.6rem 1rem 0.6rem 2.2rem', fontSize: '0.85rem' }} value={signInEmail} onChange={e => setSignInEmail(e.target.value)} required />
                     </div>
                     <div className="input-group" style={{ marginBottom: '1rem' }}>
                       <Lock size={16} className="input-icon" />
-                      <input type="password" placeholder="Password" className="input-field" style={{ padding: '0.6rem 1rem 0.6rem 2.2rem', fontSize: '0.85rem' }} />
-                      <Eye size={14} style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)', cursor: 'pointer' }} />
+                      <input type={showSignInPassword ? "text" : "password"} placeholder="Password" className="input-field" style={{ padding: '0.6rem 1rem 0.6rem 2.2rem', fontSize: '0.85rem' }} value={signInPassword} onChange={e => setSignInPassword(e.target.value)} required />
+                      <div onClick={() => setShowSignInPassword(!showSignInPassword)} style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', cursor: 'pointer', display: 'flex' }}>
+                        {showSignInPassword ? <EyeOff size={14} color="var(--text-secondary)" /> : <Eye size={14} color="var(--text-secondary)" />}
+                      </div>
                     </div>
-                    <button type="button" className="btn-primary" style={{ marginTop: '0.5rem', padding: '0.7rem' }}>
-                      Sign In &rarr;
+                    <button type="submit" className="btn-primary" style={{ marginTop: '0.5rem', padding: '0.7rem' }} disabled={loading}>
+                      {loading ? 'Processing...' : <>Sign In &rarr;</>}
                     </button>
                  </form>
+               </>
+             )}
+             
+             {['verify', 'forgot', 'verify_reset', 'reset'].includes(authMode) && (
+               <>
+                 <h5 className="serif animate-text" style={{ fontSize: '1.2rem', color: 'var(--gold-primary)', textAlign: 'center', marginBottom: '0.2rem' }}>{authMode === 'verify' && verifyOrigin === 'signin' ? 'Verification Required' : authMode === 'forgot' ? 'Account Recovery' : authMode === 'verify_reset' ? 'Verify Code' : authMode === 'reset' ? 'New Password' : 'Welcome Back'}</h5>
+                 <p className="animate-text" style={{ fontSize: '0.6rem', color: 'var(--text-secondary)', marginBottom: '1.5rem', textTransform: 'uppercase', letterSpacing: '1px', textAlign: 'center' }}>{authMode === 'verify' && verifyOrigin === 'signin' ? 'Check your email for the code.' : authMode === 'forgot' ? 'Enter your email' : authMode === 'verify_reset' ? 'Enter the 6-digit code' : authMode === 'reset' ? 'Create new password' : 'Access Your World.'}</p>
+                 
+                 {authMode === 'verify' && verifyOrigin === 'signin' ? (
+                   <form onSubmit={handleVerifyOTP}>
+                     {verifyMessage && <p style={{color: verifyMessage.includes('failed') || verifyMessage.includes('Error') || verifyMessage.includes('Invalid') ? '#ff4b4b' : '#4bff4b', fontSize: '0.75rem', marginBottom: '1rem', textAlign: 'center'}}>{verifyMessage}</p>}
+                     <div className="input-group" style={{ marginBottom: '1rem' }}>
+                       <Lock size={16} className="input-icon" />
+                       <input type="text" placeholder="6-Digit Code" className="input-field" style={{ padding: '0.6rem 1rem 0.6rem 2.2rem', fontSize: '0.85rem', letterSpacing: '2px', fontWeight: 'bold', textAlign: 'center' }} value={otp} onChange={e => setOtp(e.target.value)} maxLength={6} required />
+                     </div>
+                     <button type="submit" className="btn-primary" style={{ marginTop: '0.5rem', padding: '0.7rem' }} disabled={loading}>
+                       {loading ? 'Verifying...' : <>Verify Sign In &rarr;</>}
+                     </button>
+                   </form>
+                 ) : authMode === 'forgot' ? (
+                   <form onSubmit={handleForgotPassword}>
+                     {forgotMessage && <p style={{color: forgotMessage.includes('failed') || forgotMessage.includes('Error') || forgotMessage.includes('not found') ? '#ff4b4b' : '#4bff4b', fontSize: '0.75rem', marginBottom: '1rem', textAlign: 'center'}}>{forgotMessage}</p>}
+                     <div className="input-group" style={{ marginBottom: '1rem' }}>
+                       <Mail size={16} className="input-icon" />
+                       <input type="email" placeholder="Email Address" className="input-field" style={{ padding: '0.6rem 1rem 0.6rem 2.2rem', fontSize: '0.85rem' }} value={forgotEmail} onChange={e => setForgotEmail(e.target.value)} required />
+                     </div>
+                     <button type="submit" className="btn-primary" style={{ marginTop: '0.5rem', padding: '0.7rem' }} disabled={loading}>
+                       {loading ? 'Sending...' : <>Send Reset Code &rarr;</>}
+                     </button>
+                     <div style={{ textAlign: 'center', marginTop: '1rem' }}>
+                       <a href="#" onClick={(e) => { e.preventDefault(); setAuthMode('signin'); }} style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', textDecoration: 'none' }}>Back to Sign In</a>
+                     </div>
+                   </form>
+                  ) : authMode === 'verify_reset' ? (
+                   <form onSubmit={handleVerifyResetOtp}>
+                     {verifyResetMessage && <p style={{color: verifyResetMessage.includes('failed') || verifyResetMessage.includes('Error') || verifyResetMessage.includes('Invalid') ? '#ff4b4b' : '#4bff4b', fontSize: '0.75rem', marginBottom: '1rem', textAlign: 'center'}}>{verifyResetMessage}</p>}
+                     <div className="input-group" style={{ marginBottom: '1rem' }}>
+                       <Lock size={16} className="input-icon" />
+                       <input type="text" placeholder="6-Digit Reset Code" className="input-field" style={{ padding: '0.6rem 1rem 0.6rem 2.2rem', fontSize: '0.85rem', letterSpacing: '2px', fontWeight: 'bold', textAlign: 'center' }} value={resetOtp} onChange={e => setResetOtp(e.target.value)} maxLength={6} required />
+                     </div>
+                     <button type="submit" className="btn-primary" style={{ marginTop: '0.5rem', padding: '0.7rem' }} disabled={loading}>
+                       {loading ? 'Verifying...' : <>Verify Code &rarr;</>}
+                     </button>
+                   </form>
+                 ) : authMode === 'reset' ? (
+                   <form onSubmit={handleResetPassword}>
+                     {resetMessage && <p style={{color: resetMessage.includes('failed') || resetMessage.includes('Error') || resetMessage.includes('match') || resetMessage.includes('must') || resetMessage.includes('Invalid') ? '#ff4b4b' : '#4bff4b', fontSize: '0.75rem', marginBottom: '1rem', textAlign: 'center'}}>{resetMessage}</p>}
+
+                     <div className="input-group" style={{ marginBottom: '1rem' }}>
+                       <Lock size={16} className="input-icon" />
+                       <input type={showNewPassword ? "text" : "password"} placeholder="New Password" className="input-field" style={{ padding: '0.6rem 1rem 0.6rem 2.2rem', fontSize: '0.85rem' }} value={newPassword} onChange={e => setNewPassword(e.target.value)} required />
+                       <div onClick={() => setShowNewPassword(!showNewPassword)} style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', cursor: 'pointer', display: 'flex' }}>
+                         {showNewPassword ? <EyeOff size={14} color="var(--text-secondary)" /> : <Eye size={14} color="var(--text-secondary)" />}
+                       </div>
+                     </div>
+
+                     <div className="input-group" style={{ marginBottom: '1rem' }}>
+                       <Lock size={16} className="input-icon" />
+                       <input type={showConfirmNewPassword ? "text" : "password"} placeholder="Confirm New Password" className="input-field" style={{ padding: '0.6rem 1rem 0.6rem 2.2rem', fontSize: '0.85rem' }} value={confirmNewPassword} onChange={e => setConfirmNewPassword(e.target.value)} required />
+                       <div onClick={() => setShowConfirmNewPassword(!showConfirmNewPassword)} style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', cursor: 'pointer', display: 'flex' }}>
+                         {showConfirmNewPassword ? <EyeOff size={14} color="var(--text-secondary)" /> : <Eye size={14} color="var(--text-secondary)" />}
+                       </div>
+                     </div>
+                     <button type="submit" className="btn-primary" style={{ marginTop: '0.5rem', padding: '0.7rem' }} disabled={loading}>
+                       {loading ? 'Resetting...' : <>Reset Password &rarr;</>}
+                     </button>
+                   </form>
+                 ) : (
+                   <form onSubmit={handleSignIn}>
+                     {signInMessage && <p style={{color: signInMessage.includes('failed') || signInMessage.includes('Error') || signInMessage.includes('Invalid') || signInMessage.includes('unverified') ? '#ff4b4b' : '#4bff4b', fontSize: '0.75rem', marginBottom: '1rem', textAlign: 'center'}}>{signInMessage}</p>}
+                     <div className="input-group" style={{ marginBottom: '1rem' }}>
+                       <Mail size={16} className="input-icon" />
+                       <input type="email" placeholder="Email Address" className="input-field" style={{ padding: '0.6rem 1rem 0.6rem 2.2rem', fontSize: '0.85rem' }} value={signInEmail} onChange={e => setSignInEmail(e.target.value)} required />
+                     </div>
+                     <div className="input-group" style={{ marginBottom: '1rem' }}>
+                       <Lock size={16} className="input-icon" />
+                       <input type={showSignInPassword ? "text" : "password"} placeholder="Password" className="input-field" style={{ padding: '0.6rem 1rem 0.6rem 2.2rem', fontSize: '0.85rem' }} value={signInPassword} onChange={e => setSignInPassword(e.target.value)} required />
+                       <div onClick={() => setShowSignInPassword(!showSignInPassword)} style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', cursor: 'pointer', display: 'flex' }}>
+                         {showSignInPassword ? <EyeOff size={14} color="var(--text-secondary)" /> : <Eye size={14} color="var(--text-secondary)" />}
+                       </div>
+                     </div>
+                     <button type="submit" className="btn-primary" style={{ marginTop: '0.5rem', padding: '0.7rem' }} disabled={loading}>
+                       {loading ? 'Processing...' : <>Sign In &rarr;</>}
+                     </button>
+                   </form>
+                 )}
                </>
              )}
              

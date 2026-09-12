@@ -13,8 +13,29 @@ if (isset($data->email) && isset($data->password)) {
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($user && password_verify($password, $user['password_hash'])) {
-            http_response_code(200);
-            echo json_encode(["message" => "Login successful", "user" => ["id" => $user['id'], "name" => $user['name'], "email" => $user['email']]]);
+            $now = time();
+            $lastLogin = $user['last_login_at'] ? strtotime($user['last_login_at']) : 0;
+            $sevenDays = 7 * 24 * 60 * 60;
+            
+            if (is_null($user['email_verified_at']) || ($now - $lastLogin > $sevenDays)) {
+                // Needs OTP verification
+                $otpCode = sprintf("%06d", mt_rand(1, 999999));
+                $updateStmt = $pdo->prepare("UPDATE users SET otp_code = ?, otp_expires_at = DATE_ADD(NOW(), INTERVAL 15 MINUTE) WHERE id = ?");
+                $updateStmt->execute([$otpCode, $user['id']]);
+                
+                require_once '../email.php';
+                sendOTPEmail($user['email'], $user['name'], $otpCode);
+                
+                http_response_code(200);
+                echo json_encode(["message" => "Session expired or unverified. Please verify your email.", "requireOtp" => true, "email" => $user['email']]);
+            } else {
+                // Normal login
+                $updateStmt = $pdo->prepare("UPDATE users SET last_login_at = NOW() WHERE id = ?");
+                $updateStmt->execute([$user['id']]);
+                
+                http_response_code(200);
+                echo json_encode(["message" => "Login successful", "user" => ["id" => $user['id'], "name" => $user['name'], "email" => $user['email']]]);
+            }
         } else {
             http_response_code(401);
             echo json_encode(["message" => "Invalid email or password"]);
