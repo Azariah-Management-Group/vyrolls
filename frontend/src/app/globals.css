@@ -310,3 +310,103 @@ a:hover {
   color: var(--text-secondary);
   margin-top: 1rem;
 }
+
+/* Auth Toggle */
+.auth-toggle {
+  display: flex;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 20px;
+  margin-bottom: 1.5rem;
+  padding: 0.25rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.auth-toggle-btn {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  padding: 0.6rem;
+  border-radius: 16px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.auth-toggle-btn.active {
+  background: var(--gold-gradient);
+  color: #000;
+  font-weight: 600;
+}
+
+/* Steering Wheel Labels */
+.steer-label-left {
+  left: -80px;
+}
+.steer-label-left p, .steer-label-right p {
+  font-size: 0.7rem;
+}
+.steer-label-left h4, .steer-label-right h4 {
+  font-size: 1.1rem;
+}
+.steer-label-right {
+  right: -80px;
+}
+
+/* Mobile Responsiveness */
+.mobile-only {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .desktop-only {
+    display: none !important;
+  }
+  
+  .mobile-only {
+    display: block;
+  }
+  
+  .mobile-flex {
+    display: flex;
+  }
+
+  .app-container {
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+    gap: 1.5rem;
+  }
+  
+  .center-showcase h1 {
+    font-size: 2rem !important;
+  }
+  
+  .steering-wheel-wrapper {
+    margin: 1rem 0;
+    width: 80%;
+  }
+  
+  .panel-container {
+    width: 100%;
+  }
+  
+  .glass-panel {
+    padding: 1.5rem !important;
+  }
+  
+  /* Responsive Steering Labels */
+  .steer-label-left {
+    left: -5px;
+  }
+  .steer-label-right {
+    right: -5px;
+  }
+  .steer-label-left p, .steer-label-right p {
+    font-size: 0.5rem;
+  }
+  .steer-label-left h4, .steer-label-right h4 {
+    font-size: 0.85rem;
+  }
+}
+
