@@ -1,0 +1,1 @@
+<?php require 'db.php'; $pdo->exec('ALTER TABLE vehicles ADD COLUMN city VARCHAR(100) NULL, ADD COLUMN state_location VARCHAR(100) NULL, ADD COLUMN address VARCHAR(255) NULL, ADD COLUMN description TEXT NULL;'); echo 'Done'; ?>

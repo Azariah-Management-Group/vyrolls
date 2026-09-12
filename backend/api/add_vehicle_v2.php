@@ -34,6 +34,10 @@ $vin = $data['vin'] ?? null;
 $condition_state = $data['condition_state'] ?? null;
 $price = $data['price'] ?? null;
 $listing_type = $data['listing_type'] ?? null;
+$city = $data['city'] ?? null;
+$state_location = $data['state_location'] ?? null;
+$address = $data['address'] ?? null;
+$description = $data['description'] ?? null;
 $gallery_urls = isset($data['gallery_urls']) ? json_encode($data['gallery_urls']) : null;
 
 // The main image_url is the first image in the gallery
@@ -49,12 +53,12 @@ try {
         user_id, name, make, model, year, trim_level, body_type, 
         transmission, mileage, exterior_color, interior_color, 
         fuel_type, vin, condition_state, price, listing_type, 
-        image_url, gallery_urls
+        image_url, gallery_urls, city, state_location, address, description
     ) VALUES (
         :user_id, :name, :make, :model, :year, :trim_level, :body_type, 
         :transmission, :mileage, :exterior_color, :interior_color, 
         :fuel_type, :vin, :condition_state, :price, :listing_type, 
-        :image_url, :gallery_urls
+        :image_url, :gallery_urls, :city, :state_location, :address, :description
     )";
     
     $stmt = $pdo->prepare($insertSql);
@@ -77,6 +81,10 @@ try {
         ':listing_type' => $listing_type,
         ':image_url' => $image_url,
         ':gallery_urls' => $gallery_urls,
+        ':city' => $city,
+        ':state_location' => $state_location,
+        ':address' => $address,
+        ':description' => $description,
     ]);
     
     $vehicle_id = $pdo->lastInsertId();

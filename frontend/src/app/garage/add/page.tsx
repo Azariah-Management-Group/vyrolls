@@ -27,6 +27,10 @@ export default function AddVehiclePage() {
     condition_state: 'Like New',
     price: '',
     listing_type: 'For Sale',
+    city: '',
+    state_location: '',
+    address: '',
+    description: '',
   });
   
   useEffect(() => {
@@ -48,7 +52,7 @@ export default function AddVehiclePage() {
   const [images, setImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
@@ -110,6 +114,15 @@ export default function AddVehiclePage() {
     return data.secure_url;
   };
 
+  const handleGenerateDescription = () => {
+    const toastId = toast.loading('AI is generating description...');
+    setTimeout(() => {
+      const generated = `This beautiful ${formData.condition_state.toLowerCase()} ${formData.year} ${formData.make} ${formData.model} ${formData.trim_level} comes packed with features. Finished in a stunning ${formData.exterior_color} exterior over a pristine ${formData.interior_color} interior. With only ${formData.mileage} miles, it drives and feels like a dream. Contact me for more details or to schedule a test drive!`;
+      setFormData({...formData, description: generated});
+      toast.success('Description generated!', {id: toastId});
+    }, 1500);
+  };
+
   const handleSubmit = async () => {
     setLoading(true);
     const toastId = toast.loading('Publishing your vehicle...');
@@ -146,7 +159,7 @@ export default function AddVehiclePage() {
   };
 
   const renderStepIndicator = () => {
-    const steps = ['Vehicle Details', 'Photos & Media', 'Pricing & Listing', 'Trade Options', 'Review & Publish'];
+    const steps = ['Vehicle Details', 'Photos & Media', 'Pricing & Listing', 'Location & Details', 'Review & Publish'];
     
     return (
       <div className={styles.stepper}>
@@ -396,6 +409,44 @@ export default function AddVehiclePage() {
 
               <div className={styles.actionButtons}>
                 <button className={styles.btnSecondary} onClick={() => setStep(2)}>Back</button>
+                <button className={styles.btnPrimary} onClick={() => setStep(4)}>Next Step &rarr;</button>
+              </div>
+            </div>
+          )}
+
+          {step === 4 && (
+            <div className={styles.formSection}>
+              <div className={styles.sectionTitle}>
+                4. Location & Details
+              </div>
+              <p className={styles.sectionSubtitle}>Tell buyers where the car is and what makes it special.</p>
+              
+              <div style={{display: 'flex', gap: '20px'}}>
+                <div className={styles.formGroup} style={{flex: 1}}>
+                  <label>City <span>*</span></label>
+                  <input type="text" name="city" className={styles.input} placeholder="e.g. Miami" value={formData.city} onChange={handleChange} />
+                </div>
+                <div className={styles.formGroup} style={{flex: 1}}>
+                  <label>State / Region <span>*</span></label>
+                  <input type="text" name="state_location" className={styles.input} placeholder="e.g. FL" value={formData.state_location} onChange={handleChange} />
+                </div>
+              </div>
+
+              <div className={styles.formGroup}>
+                <label>Address (Optional)</label>
+                <input type="text" name="address" className={styles.input} placeholder="123 Ocean Drive" value={formData.address} onChange={handleChange} />
+              </div>
+
+              <div className={styles.formGroup}>
+                <label style={{display: 'flex', justifyContent: 'space-between'}}>
+                  <span>Description <span>*</span></span>
+                  <button type="button" onClick={handleGenerateDescription} style={{background: 'none', border: 'none', color: 'var(--gold)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.85rem'}}><Sparkles size={14}/> AI Suggestion</button>
+                </label>
+                <textarea name="description" className={styles.input} style={{minHeight: '120px', resize: 'vertical'}} placeholder="Describe your vehicle's features, history, and condition..." value={formData.description} onChange={handleChange} />
+              </div>
+
+              <div className={styles.actionButtons}>
+                <button className={styles.btnSecondary} onClick={() => setStep(3)}>Back</button>
                 <button className={styles.btnPrimary} onClick={() => setStep(5)}>Next Step &rarr;</button>
               </div>
             </div>
@@ -408,15 +459,16 @@ export default function AddVehiclePage() {
               </div>
               <p className={styles.sectionSubtitle}>Review your details before going live.</p>
               
-              <div style={{background: '#f9f9f9', padding: '20px', borderRadius: '8px', marginBottom: '20px'}}>
+              <div style={{background: '#f9f9f9', padding: '20px', borderRadius: '8px', marginBottom: '20px', color: '#1a1a1a'}}>
                 <p><strong>Vehicle:</strong> {formData.year} {formData.make} {formData.model} {formData.trim_level}</p>
+                <p><strong>Location:</strong> {formData.city}, {formData.state_location}</p>
                 <p><strong>Price:</strong> ${formData.price}</p>
                 <p><strong>Listing Type:</strong> {formData.listing_type}</p>
                 <p><strong>Images:</strong> {images.length} uploaded</p>
               </div>
 
               <div className={styles.actionButtons}>
-                <button className={styles.btnSecondary} onClick={() => setStep(3)}>Back</button>
+                <button className={styles.btnSecondary} onClick={() => setStep(4)}>Back</button>
                 <button className={styles.btnPrimary} onClick={handleSubmit} disabled={loading}>
                   {loading ? 'Publishing...' : 'Publish Listing'}
                 </button>
@@ -450,7 +502,7 @@ export default function AddVehiclePage() {
               <div className={styles.previewSpecs}>
                 <div className={styles.specItem}><span style={{fontWeight: 600}}>Mi:</span> {formData.mileage || '0'}</div>
                 <div className={styles.specItem}><span style={{fontWeight: 600}}>Trans:</span> {formData.transmission}</div>
-                <div className={styles.specItem}><span style={{fontWeight: 600}}>Loc:</span> City, State</div>
+                <div className={styles.specItem}><span style={{fontWeight: 600}}>Loc:</span> {formData.city ? `${formData.city}, ${formData.state_location}` : 'City, State'}</div>
                 <div className={styles.specItem}><span style={{fontWeight: 600}}>Fuel:</span> {formData.fuel_type}</div>
               </div>
             </div>
