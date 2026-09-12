@@ -117,7 +117,7 @@ export default function PublicProfile() {
       <div className={styles.profileHeaderSection}>
         {/* Top Cover Banner */}
         <div 
-          className={styles.bannerImageContainer} 
+          className={styles.bannerImage} 
           style={{ backgroundImage: `url(${data.profile.cover_url || 'https://images.unsplash.com/photo-1544829099-b9a0c07fad1a?q=80&w=2071&auto=format&fit=crop'})` }}
         >
           <div className={styles.bannerOverlay}>
