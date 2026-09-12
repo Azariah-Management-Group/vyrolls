@@ -63,7 +63,7 @@ const DashboardSkeleton = () => (
   </div>
 );
 
-import SkeletonLoading from '@/components/SkeletonLoading';
+
 import Loading from '../loading';
 import EditProfileModal from './EditProfileModal';
 

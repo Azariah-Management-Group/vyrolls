@@ -20,6 +20,21 @@ export default function Home() {
       ignitionAudioRef.current.preload = 'auto';
     }
   }, []);
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const userId = localStorage.getItem('user_id');
+      const expiry = localStorage.getItem('session_expiry');
+      if (userId && expiry) {
+        if (new Date().getTime() < parseInt(expiry)) {
+          router.push('/dashboard');
+        } else {
+          localStorage.removeItem('user_id');
+          localStorage.removeItem('session_expiry');
+        }
+      }
+    }
+  }, [router]);
+
   const [startAngle, setStartAngle] = useState(0);
   const [authMode, setAuthMode] = useState<'signup' | 'signin' | 'verify' | 'forgot' | 'verify_reset' | 'reset'>('signup');
   const [verifyOrigin, setVerifyOrigin] = useState<'signup' | 'signin' | null>(null);
