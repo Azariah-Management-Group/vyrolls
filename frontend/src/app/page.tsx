@@ -2,16 +2,24 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { User, Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import { User, Mail, Lock, Eye, EyeOff, Power } from 'lucide-react';
 
 export default function Home() {
   const router = useRouter();
   const wheelRef = useRef<HTMLDivElement>(null);
   const signUpRef = useRef<HTMLDivElement>(null);
   const signInRef = useRef<HTMLDivElement>(null);
+  const ignitionAudioRef = useRef<HTMLAudioElement | null>(null);
   
   const [rotation, setRotation] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      ignitionAudioRef.current = new Audio('/ignition.wav');
+      ignitionAudioRef.current.preload = 'auto';
+    }
+  }, []);
   const [startAngle, setStartAngle] = useState(0);
   const [authMode, setAuthMode] = useState<'signup' | 'signin' | 'verify' | 'forgot' | 'verify_reset' | 'reset'>('signup');
   const [verifyOrigin, setVerifyOrigin] = useState<'signup' | 'signin' | null>(null);
@@ -110,6 +118,8 @@ export default function Home() {
         } else {
           setSignInMessage('Sign in successful! Welcome back.');
           localStorage.setItem('user_id', data.user.id);
+          const expiry = new Date().getTime() + 7 * 24 * 60 * 60 * 1000;
+          localStorage.setItem('session_expiry', expiry.toString());
           router.push('/dashboard');
         }
       } else {
@@ -135,6 +145,8 @@ export default function Home() {
       if (res.ok) {
         setVerifyMessage('Verification successful!');
         localStorage.setItem('user_id', data.user.id);
+        const expiry = new Date().getTime() + 7 * 24 * 60 * 60 * 1000;
+        localStorage.setItem('session_expiry', expiry.toString());
         router.push('/dashboard');
       } else {
         setVerifyMessage(data.message || 'Verification failed');
@@ -417,7 +429,7 @@ export default function Home() {
                  }}
                  onClick={() => {
                    const audio = new Audio('/horn.wav');
-                   audio.play();
+                   audio.play().catch(e => console.warn('Horn audio play failed:', e));
                  }}
                  style={{
                    position: 'absolute',
@@ -432,18 +444,46 @@ export default function Home() {
                  title="Honk the Horn!"
                />
              </div>
-             <div className="animate-text steer-label-left" style={{ position: 'absolute', top: '50%', transform: 'translateY(-50%)', color: 'var(--gold-primary)', textAlign: 'right', animationDelay: '1.1s', pointerEvents: 'none', opacity: rotation < -10 ? 1 : 0.5, transition: 'opacity 0.3s' }}>
-               <p style={{ marginBottom: '0.5rem', whiteSpace: 'nowrap' }}>TURN LEFT</p>
-               <h4 className="serif" style={{ whiteSpace: 'nowrap' }}>SIGN UP</h4>
-             </div>
-             <div className="animate-text steer-label-right" style={{ position: 'absolute', top: '50%', transform: 'translateY(-50%)', color: 'var(--gold-primary)', textAlign: 'left', animationDelay: '1.2s', pointerEvents: 'none', opacity: rotation > 10 ? 1 : 0.5, transition: 'opacity 0.3s' }}>
-               <p style={{ marginBottom: '0.5rem', whiteSpace: 'nowrap' }}>TURN RIGHT</p>
-               <h4 className="serif" style={{ whiteSpace: 'nowrap' }}>SIGN IN</h4>
-             </div>
+             
+             {/* Engine Start Button */}
+             <button
+               onClick={() => {
+                 if (ignitionAudioRef.current) {
+                   ignitionAudioRef.current.currentTime = 0;
+                   ignitionAudioRef.current.play().catch(e => console.warn('Audio play failed:', e));
+                 }
+               }}
+               style={{
+                 position: 'absolute',
+                 right: '-60px',
+                 top: '50%',
+                 transform: 'translateY(-50%)',
+                 background: 'linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%)',
+                 border: '2px solid var(--gold-primary)',
+                 borderRadius: '50%',
+                 width: '60px',
+                 height: '60px',
+                 display: 'flex',
+                 flexDirection: 'column',
+                 justifyContent: 'center',
+                 alignItems: 'center',
+                 cursor: 'pointer',
+                 boxShadow: '0 0 15px rgba(212, 175, 55, 0.3), inset 0 0 10px rgba(0,0,0,0.8)',
+                 color: 'var(--gold-primary)',
+                 zIndex: 30,
+                 transition: 'all 0.2s ease',
+               }}
+               onMouseDown={(e) => e.currentTarget.style.transform = 'translateY(-50%) scale(0.95)'}
+               onMouseUp={(e) => e.currentTarget.style.transform = 'translateY(-50%) scale(1)'}
+               onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(-50%) scale(1)'}
+               title="Engine Start/Stop"
+             >
+               <Power size={20} style={{ marginBottom: '2px' }} />
+               <span style={{ fontSize: '0.4rem', fontWeight: 'bold', letterSpacing: '1px' }}>START</span>
+               <span style={{ fontSize: '0.4rem', fontWeight: 'bold', letterSpacing: '1px' }}>ENGINE</span>
+             </button>
           </div>
           
-          <p className="animate-text mobile-only" style={{ fontSize: '0.55rem', textTransform: 'uppercase', letterSpacing: '2px', color: 'var(--text-secondary)', marginBottom: '1rem' }}>Steer left for Sign up &bull; Steer right for Sign In</p>
-
           <div className="desktop-only" style={{ marginTop: 'auto', marginBottom: '2rem', display: 'flex', justifyContent: 'center', gap: '3rem', fontSize: '0.75rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '2px' }}>
              <span>People</span>
              <span>Cars</span>

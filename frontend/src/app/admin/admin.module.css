@@ -1,0 +1,246 @@
+.container {
+  min-height: 100vh;
+  background-color: #121212;
+  color: white;
+  font-family: var(--font-inter), sans-serif;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 40px;
+  background-color: #1a1a1a;
+  border-bottom: 1px solid #333;
+}
+
+.logo {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--gold);
+}
+
+.backButton {
+  background: none;
+  border: 1px solid var(--gold);
+  color: var(--gold);
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.backButton:hover {
+  background-color: var(--gold);
+  color: black;
+}
+
+.main {
+  display: flex;
+  padding: 40px;
+  gap: 40px;
+}
+
+.sidebar {
+  width: 250px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.tabBtn {
+  background-color: transparent;
+  border: none;
+  color: #ccc;
+  text-align: left;
+  padding: 12px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: all 0.2s;
+}
+
+.tabBtn:hover {
+  background-color: #2a2a2a;
+  color: white;
+}
+
+.activeTab {
+  background-color: #2a2a2a;
+  color: var(--gold);
+  font-weight: 600;
+}
+
+.content {
+  flex: 1;
+  background-color: #1a1a1a;
+  padding: 30px;
+  border-radius: 12px;
+  border: 1px solid #333;
+}
+
+.content h2 {
+  margin-top: 0;
+  margin-bottom: 24px;
+  font-size: 1.5rem;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th, .table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #333;
+}
+
+.table th {
+  color: #888;
+  font-weight: 500;
+}
+
+.statusBadge {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.statusBadge.active {
+  background-color: rgba(48, 209, 88, 0.2);
+  color: #30d158;
+}
+
+.statusBadge.banned {
+  background-color: rgba(255, 69, 58, 0.2);
+  color: #ff453a;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+.banBtn {
+  background-color: rgba(255, 159, 10, 0.2);
+  color: #ff9f0a;
+  border: 1px solid #ff9f0a;
+  padding: 4px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.unbanBtn {
+  background-color: rgba(48, 209, 88, 0.2);
+  color: #30d158;
+  border: 1px solid #30d158;
+  padding: 4px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.deleteBtn {
+  background-color: rgba(255, 69, 58, 0.2);
+  color: #ff453a;
+  border: 1px solid #ff453a;
+  padding: 4px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.activityList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.activityItem {
+  background-color: #222;
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid #333;
+}
+
+.timestamp {
+  font-size: 0.8rem;
+  color: #888;
+  margin-top: 8px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 500px;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 500px;
+}
+
+.formGroup label {
+  color: #aaa;
+  font-size: 0.9rem;
+}
+
+.formGroup input, .formGroup textarea {
+  background-color: #222;
+  border: 1px solid #444;
+  color: white;
+  padding: 12px;
+  border-radius: 6px;
+  font-family: inherit;
+  outline: none;
+}
+
+.formGroup input:focus, .formGroup textarea:focus {
+  border-color: var(--gold);
+}
+
+.saveBtn {
+  background-color: var(--gold);
+  color: black;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.saveBtn:hover {
+  opacity: 0.9;
+}
+
+.loadingContainer {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #121212;
+}
+
+.ferrariLoader {
+  width: 150px;
+  animation: drive 2s linear infinite;
+}
+
+.carImg {
+  width: 100%;
+  height: auto;
+}
+
+@keyframes drive {
+  0% { transform: translateX(-100px); opacity: 0; }
+  50% { opacity: 1; }
+  100% { transform: translateX(100px); opacity: 0; }
+}

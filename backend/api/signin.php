@@ -13,6 +13,11 @@ if (isset($data->email) && isset($data->password)) {
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($user && password_verify($password, $user['password_hash'])) {
+            if ($user['status'] === 'banned') {
+                http_response_code(403);
+                echo json_encode(["message" => "Your account has been banned."]);
+                exit;
+            }
             $now = time();
             $lastLogin = $user['last_login_at'] ? strtotime($user['last_login_at']) : 0;
             $sevenDays = 7 * 24 * 60 * 60;
@@ -33,6 +38,10 @@ if (isset($data->email) && isset($data->password)) {
                 $updateStmt = $pdo->prepare("UPDATE users SET last_login_at = NOW() WHERE id = ?");
                 $updateStmt->execute([$user['id']]);
                 
+                // Log activity
+                $actStmt = $pdo->prepare("INSERT INTO user_activities (user_id, action, details) VALUES (?, ?, ?)");
+                $actStmt->execute([$user['id'], 'login', 'User signed in successfully']);
+
                 http_response_code(200);
                 echo json_encode(["message" => "Login successful", "user" => ["id" => $user['id'], "name" => $user['name'], "email" => $user['email']]]);
             }

@@ -7,6 +7,7 @@ import {
   User, Car, FileText, ShoppingBag, Bookmark, Calendar, Shield, Settings,
   ThumbsUp, MessageSquare, Share2
 } from 'lucide-react';
+import toast from 'react-hot-toast';
 import styles from './dashboard.module.css';
 
 const DashboardSkeleton = () => (
@@ -61,16 +62,28 @@ const DashboardSkeleton = () => (
     </div>
   </div>
 );
+
+import SkeletonLoading from '@/components/SkeletonLoading';
 import Loading from '../loading';
+import EditProfileModal from './EditProfileModal';
+
 export default function Dashboard() {
   const router = useRouter();
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('overview');
+  const [error, setError] = useState('');
+  const [activeTab, setActiveTab] = useState('Overview');
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [messages, setMessages] = useState<any[]>([]);
+  const [siteLogo, setSiteLogo] = useState<string | null>(null);
 
-  useEffect(() => {
+  const fetchDashboardData = () => {
     const userId = localStorage.getItem('user_id');
-    if (!userId) {
+    const expiry = localStorage.getItem('session_expiry');
+    
+    if (!userId || !expiry || new Date().getTime() > parseInt(expiry)) {
+      localStorage.removeItem('user_id');
+      localStorage.removeItem('session_expiry');
       router.push('/');
       return;
     }
@@ -86,6 +99,28 @@ export default function Dashboard() {
         console.error(err);
         setLoading(false);
       });
+
+    fetch(`${API_URL}/messages.php?user_id=${userId}`)
+      .then(res => res.json())
+      .then(result => {
+        if (result.messages) {
+          setMessages(result.messages);
+        }
+      })
+      .catch(err => console.error(err));
+      
+    fetch(`${API_URL}/admin/settings.php`)
+      .then(res => res.json())
+      .then(result => {
+        if (result.settings && result.settings.site_logo) {
+          setSiteLogo(result.settings.site_logo);
+        }
+      })
+      .catch(err => console.error(err));
+  };
+
+  useEffect(() => {
+    fetchDashboardData();
   }, [router]);
 
   if (loading) {
@@ -101,11 +136,17 @@ export default function Dashboard() {
       {/* Header */}
       <header className={styles.header}>
         <div className={styles.logo}>
-          <div className={styles.logoIcon} style={{fontFamily: "'Playfair Display', serif", color: "#d4af37", fontSize: "1.8rem", letterSpacing: "3px"}}>V</div>
-          <div className={styles.logoText}>
-            <span style={{fontFamily: "'Playfair Display', serif", letterSpacing: "3px"}}>VYROLLS</span>
-            <span className={styles.logoSub} style={{letterSpacing: "3px"}}>Drive Your World</span>
-          </div>
+          {siteLogo ? (
+            <img src={siteLogo} alt="Site Logo" style={{height: '40px'}} />
+          ) : (
+            <>
+              <div className={styles.logoIcon} style={{fontFamily: "'Playfair Display', serif", color: "#d4af37", fontSize: "1.8rem", letterSpacing: "3px"}}>V</div>
+              <div className={styles.logoText}>
+                <span style={{fontFamily: "'Playfair Display', serif", letterSpacing: "3px"}}>VYROLLS</span>
+                <span className={styles.logoSub} style={{letterSpacing: "3px"}}>Drive Your World</span>
+              </div>
+            </>
+          )}
         </div>
         <nav className={styles.topNav}>
           <a href="#">Vehicles</a>
@@ -127,6 +168,9 @@ export default function Dashboard() {
             <span>My Garage</span>
             <ChevronDown size={16} />
           </div>
+          {data.user.role === 'super_admin' && (
+            <button className={styles.listBtn} onClick={() => router.push('/admin')} style={{marginRight: '10px', backgroundColor: '#333', color: 'var(--gold)', border: '1px solid var(--gold)'}}>Admin Panel</button>
+          )}
           <button className={styles.listBtn}>List Your Vehicle +</button>
         </div>
       </header>
@@ -169,7 +213,7 @@ export default function Dashboard() {
             
             <div className={styles.avatarWrapper}>
               <img src={data.profile.avatar_url || "https://ui-avatars.com/api/?name="+data.user.name+"&background=random"} alt="Avatar" className={styles.avatar} />
-              <button className={styles.avatarEdit}><Camera size={16} /></button>
+              <button className={styles.avatarEdit} onClick={() => setIsEditModalOpen(true)}><Camera size={16} /></button>
             </div>
 
             <div className={styles.bannerProfileStats}>
@@ -199,8 +243,11 @@ export default function Dashboard() {
             </div>
             
             <div className={styles.bannerProfileActions}>
-              <button className={styles.editBtn}>Edit Profile</button>
-              <button className={styles.shareBtn}>Share Profile</button>
+              <button className={styles.editBtn} onClick={() => setIsEditModalOpen(true)}>Edit Profile</button>
+              <button className={styles.shareBtn} onClick={() => {
+                navigator.clipboard.writeText(`${window.location.origin}/${data.profile.handle}`);
+                toast.success('Profile link copied!');
+              }}>Share Profile</button>
             </div>
 
           </div>
@@ -214,7 +261,8 @@ export default function Dashboard() {
         <aside className={`${styles.leftSidebar} ${styles.slideInLeft} ${styles.delay2}`}>
 
           <nav className={styles.sideNav}>
-            <a href="#" className={styles.active}><User size={18} /> Profile</a>
+            <a href="#" className={activeTab !== 'messages' ? styles.active : ''} onClick={(e) => { e.preventDefault(); setActiveTab('overview'); }}><User size={18} /> Profile</a>
+            <a href="#" className={activeTab === 'messages' ? styles.active : ''} onClick={(e) => { e.preventDefault(); setActiveTab('messages'); }}><MessageSquare size={18} /> Messages {messages.filter(m => !m.is_read).length > 0 && <span className={styles.msgBadge}>{messages.filter(m => !m.is_read).length}</span>}</a>
             <a href="#"><Car size={18} /> My Garage</a>
             <a href="#"><FileText size={18} /> Posts</a>
             <a href="#"><ShoppingBag size={18} /> Marketplace</a>
@@ -233,7 +281,40 @@ export default function Dashboard() {
 
         {/* Center Content */}
         <main className={`${styles.mainContent} ${styles.fadeInUp} ${styles.delay3}`}>
-          <div className={styles.tabs}>
+          {activeTab === 'messages' ? (
+            <div className={styles.messagesSection}>
+              <h2>Messages</h2>
+              {messages.length === 0 ? (
+                <div className={styles.emptyState}>No messages yet.</div>
+              ) : (
+                <div className={styles.messageList}>
+                  {messages.map(msg => (
+                    <div key={msg.id} className={`${styles.messageCard} ${msg.is_read ? styles.readMessage : styles.unreadMessage}`}>
+                      <div className={styles.msgHeader}>
+                        <h4>{msg.subject}</h4>
+                        <span>{new Date(msg.created_at).toLocaleString()}</span>
+                      </div>
+                      <p>{msg.message}</p>
+                      {!msg.is_read && (
+                        <button className={styles.markReadBtn} onClick={() => {
+                          const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+                          fetch(`${API_URL}/messages.php`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ user_id: data.user.id, action: 'mark_read', message_id: msg.id })
+                          }).then(() => {
+                            setMessages(messages.map(m => m.id === msg.id ? {...m, is_read: 1} : m));
+                          });
+                        }}>Mark as Read</button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : (
+            <>
+              <div className={styles.tabs}>
             <button className={activeTab === 'overview' ? styles.activeTab : ''} onClick={() => setActiveTab('overview')}>Overview</button>
             <button>Garage ({data.vehicles.length})</button>
             <button>Posts ({data.posts.length})</button>
@@ -308,6 +389,8 @@ export default function Dashboard() {
                ))
              )}
           </div>
+            </>
+          )}
         </main>
 
         {/* Right Sidebar */}
@@ -391,6 +474,13 @@ export default function Dashboard() {
           </div>
         </aside>
       </div>
+      <EditProfileModal 
+        isOpen={isEditModalOpen} 
+        onClose={() => setIsEditModalOpen(false)} 
+        profileData={data.profile} 
+        userId={data.user.id} 
+        onSuccess={fetchDashboardData} 
+      />
     </div>
   );
 }

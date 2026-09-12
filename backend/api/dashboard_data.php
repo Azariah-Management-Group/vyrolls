@@ -20,7 +20,7 @@ $user_id = (int)$_GET['user_id'];
 
 try {
     // Basic user info
-    $stmt = $pdo->prepare("SELECT id, name, email FROM users WHERE id = ?");
+    $stmt = $pdo->prepare("SELECT id, name, email, role FROM users WHERE id = ?");
     $stmt->execute([$user_id]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -38,7 +38,8 @@ try {
     // If profile doesn't exist, create a default one
     if (!$profile) {
         $stmt = $pdo->prepare("INSERT INTO user_profiles (user_id, handle, member_since) VALUES (?, ?, CURDATE())");
-        $default_handle = '@user' . $user_id;
+        $user_name = preg_replace('/[^a-zA-Z0-9]/', '', strtolower($user['name']));
+        $default_handle = '@' . $user_name . $user_id;
         $stmt->execute([$user_id, $default_handle]);
         
         $stmt = $pdo->prepare("SELECT * FROM user_profiles WHERE user_id = ?");
@@ -71,6 +72,15 @@ try {
     $stmt->execute([$user_id]);
     $communities = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+    // Follower Stats
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM followers WHERE following_id = ?");
+    $stmt->execute([$user_id]);
+    $followers_count = (int)$stmt->fetchColumn();
+
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM followers WHERE follower_id = ?");
+    $stmt->execute([$user_id]);
+    $following_count = (int)$stmt->fetchColumn();
+
     // Prepare response
     $response = [
         "user" => $user,
@@ -80,8 +90,8 @@ try {
         "badges" => $badges,
         "communities" => $communities,
         "stats" => [
-            "followers" => 0,
-            "following" => 0,
+            "followers" => $followers_count,
+            "following" => $following_count,
             "reviews" => 0,
             "community_rank" => "Top 50%",
             "avg_rating" => 0.0,
